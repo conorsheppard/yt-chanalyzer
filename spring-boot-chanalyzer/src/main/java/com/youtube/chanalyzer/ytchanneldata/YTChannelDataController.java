@@ -1,6 +1,5 @@
-package com.youtube.chanalyzer.controller;
+package com.youtube.chanalyzer.ytchanneldata;
 
-import com.youtube.chanalyzer.dto.GraphDataResponseDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -14,31 +13,25 @@ import java.util.*;
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api")
-public class ChannelController {
-    Logger logger = LoggerFactory.getLogger(ChannelController.class);
+public class YTChannelDataController {
+    Logger logger = LoggerFactory.getLogger(YTChannelDataController.class);
     List<String> labels = Arrays.asList("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
-//    Map<String, List<String>> responseObject = Map.ofEntries(
-//            entry("labels", labels),
-//            entry("datasets", Arrays.asList("1000", "2000", "3000", "4000", "8000", "16000", "32000", "64000", "128000", "256000", "512000", "1024000"))
-//    );
 
     @GetMapping("/channel")
-    public ResponseEntity<GraphDataResponseDTO> getChannelVideos(@RequestParam(required = true) String channelId) {
+    public ResponseEntity<YTChannelDataResponseDTO> getChannelVideos(@RequestParam(required = true) String channelId) {
         logger.info(channelId);
         try {
-            GraphDataResponseDTO response = scrape(channelId);
-//            logger.info(response.toString());
-//            logger.info(responseObject.toString());
+            YTChannelDataResponseDTO response = scrape(channelId);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    private GraphDataResponseDTO scrape(String channelId) {
+    private YTChannelDataResponseDTO scrape(String channelId) {
         logger.info("Working Directory: {}", System.getProperty("user.dir"));
         ProcessBuilder ps = new ProcessBuilder("python3", "get_yt_channel_videos.py", channelId);
-        GraphDataResponseDTO response = new GraphDataResponseDTO();
+        YTChannelDataResponseDTO response = new YTChannelDataResponseDTO();
         Map<String, Integer> monthsAndVideoViewsMap = new HashMap<>() {{
             put("Jan", 0);
             put("Feb", 0);
@@ -59,7 +52,6 @@ public class ChannelController {
             Process pr = ps.start();
             BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
             String videoID;
-//            List<String> labels = new ArrayList<>();
             List<String> datasets = new ArrayList<>();
             while ((videoID = in.readLine()) != null) {
                 logger.info("video ID: {}", videoID);
@@ -67,13 +59,11 @@ public class ChannelController {
                 logger.info("video views: {}", videoViewsStr);
                 String viewsParsed = videoViewsStr.substring(0, videoViewsStr.length() - 6).replace(",", "");
                 int viewsAsInt = Integer.parseInt(viewsParsed);
-//                datasets.add(viewsParsed);
                 String videoDate = scrapeVideoDate(videoID);
                 String shortDate = videoDate.substring(0, 3);
                 monthsAndVideoViewsMap.put(shortDate, monthsAndVideoViewsMap.get(shortDate) + viewsAsInt);
                 String videoTitle = in.readLine();
                 logger.info("video title: {}", videoTitle);
-//                videos.put(line, viewsAsInt);
             }
             response.setLabels(labels);
             for (Map.Entry<String, Integer> entry : monthsAndVideoViewsMap.entrySet()) {

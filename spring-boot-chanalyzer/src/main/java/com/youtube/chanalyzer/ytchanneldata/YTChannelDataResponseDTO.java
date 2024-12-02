@@ -1,8 +1,8 @@
-package com.youtube.chanalyzer.dto;
+package com.youtube.chanalyzer.ytchanneldata;
 
 import java.util.List;
 
-public class GraphDataResponseDTO {
+public class YTChannelDataResponseDTO {
     List<String> labels;
     List<String> datasets;
 
