@@ -36,7 +36,8 @@ public class ChannelController {
     }
 
     private GraphDataResponseDTO scrape(String channelId) {
-        ProcessBuilder ps = new ProcessBuilder("python3", "src/main/scripts/python/get_yt_channel_videos.py", channelId);
+        logger.info("Working Directory: {}", System.getProperty("user.dir"));
+        ProcessBuilder ps = new ProcessBuilder("python3", "get_yt_channel_videos.py", channelId);
         GraphDataResponseDTO response = new GraphDataResponseDTO();
         Map<String, Integer> monthsAndVideoViewsMap = new HashMap<>() {{
             put("Jan", 0);
@@ -90,10 +91,10 @@ public class ChannelController {
     }
 
     private String scrapeVideoDate(String videoID) {
-        ProcessBuilder ps = new ProcessBuilder("python3", "src/main/scripts/python/get_video_by_id.py", videoID);
+        ProcessBuilder ps = new ProcessBuilder("python3", "get_video_by_id.py", videoID);
         String videoDate = "";
         try {
-            logger.info("scraping video date for ID: " + videoID);
+            logger.info("scraping video date for ID: {}", videoID);
             Process pr = ps.start();
             BufferedReader in = new BufferedReader(new InputStreamReader(pr.getInputStream()));
             videoDate = in.readLine();
