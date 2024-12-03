@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-chanalyzer
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: react-chanalyzer
+  template:
+    metadata:
+      labels:
+        app: react-chanalyzer
+    spec:
+      containers:
+        - name: react-chanalyzer
+          image: conorsheppard/react-chanalyzer
+          ports:
+            - containerPort: 3000

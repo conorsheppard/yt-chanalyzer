@@ -1,0 +1,10 @@
+# Ignore all files in the root directory
+*
+# Include the src directory
+!src/
+!pom.xml
+!entrypoint.sh
+# Exclude the target directory and its contents
+target/
+
+!target/chanalyzer-0.0.1-SNAPSHOT.jar
