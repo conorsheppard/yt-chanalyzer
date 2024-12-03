@@ -1,19 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: react-chanalyzer
+  name: yt-chanalyzer
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: react-chanalyzer
+      app: yt-chanalyzer
   template:
     metadata:
       labels:
-        app: react-chanalyzer
+        app: yt-chanalyzer
     spec:
       containers:
         - name: react-chanalyzer
           image: conorsheppard/react-chanalyzer
           ports:
             - containerPort: 3000
+        - name: spring-boot-chanalyzer
+          image: conorsheppard/spring-boot-chanalyzer
+          ports:
+            - containerPort: 8080
