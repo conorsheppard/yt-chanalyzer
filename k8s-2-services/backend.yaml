@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-boot-chanalyzer
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: backend
+  selector:
+    app: spring-boot-chanalyzer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-boot-chanalyzer
+spec:
+  selector:
+    matchLabels:
+      app: spring-boot-chanalyzer
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: spring-boot-chanalyzer
+    spec:
+      containers:
+        - image: conorsheppard/spring-boot-chanalyzer
+          name: spring-boot-chanalyzer
+          ports:
+            - containerPort: 8080

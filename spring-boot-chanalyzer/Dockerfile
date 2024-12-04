@@ -14,4 +14,4 @@ RUN apk add --update --no-cache python3 py3-pip
 
 COPY entrypoint.sh /
 ENTRYPOINT ["sh", "/entrypoint.sh"]
-EXPOSE 8080
+EXPOSE 8080/tcp
