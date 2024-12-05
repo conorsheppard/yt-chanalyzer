@@ -1,18 +1,21 @@
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: yt-chanalyzer-ns
   name: spring-boot-chanalyzer
 spec:
   ports:
     - port: 8080
       targetPort: 8080
-      name: backend
+      name: spring-boot-chanalyzer
   selector:
     app: spring-boot-chanalyzer
+  type: LoadBalancer
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: yt-chanalyzer-ns
   name: spring-boot-chanalyzer
 spec:
   selector:
