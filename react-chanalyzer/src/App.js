@@ -27,9 +27,6 @@ function App() {
       ],
     };
 
-    {/* MANTA channel ID: UC6C2fzB1RTMY9uga4sATZBg */}
-    {/* David Bennett Piano: UCz2iUx-Imr6HgDC3zAFpjOw */}
-    {/* NASA: UCTPSb6BE8Qxltodm96M5lew */}
     axios.get("http://localhost:8080/api/channel?channelId=" + value).then(response => {
       graphData["labels"] = response.data["labels"];
       graphData["datasets"][0]["data"] = response.data["datasets"];
@@ -44,8 +41,9 @@ function App() {
     return (
       <>
         <form onSubmit={onSubmit}>
-          Enter YouTube Channel ID: <input ref={inputRef} type="text" />
-          <button type="submit">Submit</button>
+          <div class="search-bar-text">Enter the YouTube channel ID</div>
+          <input class="search-bar-input" ref={inputRef} type="text" placeholder="UCz2iUx-Imr6HgDC3zAFpjOw" />
+          <button class="submit-button" type="submit">Submit</button>
         </form>
       </>
     )
@@ -53,8 +51,10 @@ function App() {
 
   return (
     <>
-      <h3>Graph Data:</h3>
-      <LineGraph data={graphData} />
+      <div class="line-graph">
+        <h3>Graph Data:</h3>
+        <LineGraph data={graphData} />
+      </div>
     </>
   )
 }

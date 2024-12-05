@@ -1,0 +1,36 @@
+body {
+    background-color: white;
+    padding: 40px;
+    font-family: Arial;
+    text-align: center;
+}
+
+.search-bar-text {
+    padding: 10px;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.search-bar-input {
+    padding: 5px;
+    margin: 5px;
+    width: 500px;
+    border:2px solid #ccc;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.submit-button {
+    padding: 5px 15px;
+    margin: 5px;
+    background: #ccc;
+    border-color: #ccc;
+    cursor: pointer;
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.line-graph {
+    text-align: left;
+    width: 70%;
+}

@@ -2,14 +2,14 @@ version: '3'
 services:
 
   spring-boot-chanalyzer:
-    image: "spring-boot-chanalyzer"
+    image: "conorsheppard/spring-boot-chanalyzer"
     container_name: spring-boot-chanalyzer
     ports:
       - "8080:8080"
     environment:
       - SPRING.PROFILES.ACTIVE=default
   react-chanalyzer:
-    image: "react-chanalyzer"
+    image: "conorsheppard/react-chanalyzer"
     container_name: react-chanalyzer
     ports:
       - "3000:3000"
