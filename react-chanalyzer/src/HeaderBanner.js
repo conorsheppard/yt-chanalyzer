@@ -1,5 +1,5 @@
-import kubes_logo from './kubes-logo.png';
-import react_logo from './react-logo.svg';
+import kubes_logo from './logos/kubes-logo.png';
+import react_logo from './logos/react-logo.svg';
 import "./fonts/JetBrainsMono-Medium.ttf";
 import "./fonts/JetBrainsMono-ExtraBoldItalic.ttf";
 
