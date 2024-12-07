@@ -4,6 +4,12 @@
     url(fonts/JetBrainsMono-Medium.ttf) format("truetype");
 }
 
+@font-face {
+    font-family: "JetBrainsMonoExtraBoldItalic";
+    src: local("JetBrainsMono-ExtraBoldItalic"),
+    url(fonts/JetBrainsMono-ExtraBoldItalic.ttf) format("truetype");
+}
+
 * {
     box-sizing: border-box;
 }
@@ -19,7 +25,7 @@ body {
 
     font-family: JetBrainsMonoMedium;
     font-size: xx-small;
-    background-color: #4c4b4b;
+    background-color: #323232;
     color: white;
     height: 10em;
     padding: 1%;
@@ -28,12 +34,26 @@ body {
         font-size: small;
         height: 6em;
     }
+}
 
-    a {
-        color: #fdec96;
-    }
+.kubes-text {
+    color: #3C6FDE;
+    font-family: JetBrainsMonoExtraBoldItalic;
 }
 
 .kubes-logo {
-    width: 13px;
+    width: 12px;
+}
+
+.react-text {
+    color: rgb(53, 126, 152);
+    font-family: JetBrainsMonoExtraBoldItalic;
+}
+
+.react-logo {
+    width: 12px;
+}
+
+.github-link {
+    color: #fdec96;
 }
