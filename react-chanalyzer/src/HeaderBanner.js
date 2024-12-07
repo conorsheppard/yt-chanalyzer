@@ -1,4 +1,5 @@
 import kubes_logo from './kubes-logo.png';
+import "./fonts/JetBrainsMono-Medium.ttf";
 
 export default function HeaderBanner() {
     return <nav className="header-banner">

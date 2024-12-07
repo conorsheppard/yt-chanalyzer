@@ -1,3 +1,9 @@
+@font-face {
+    font-family: "JetBrainsMonoMedium";
+    src: local("JetBrainsMono-Medium"),
+    url(fonts/JetBrainsMono-Medium.ttf) format("truetype");
+}
+
 * {
     box-sizing: border-box;
 }
@@ -11,6 +17,8 @@ body {
     flex-direction: column;
     justify-content: space-evenly;
 
+    font-family: JetBrainsMonoMedium;
+    font-size: small;
     background-color: #4c4b4b;
     color: white;
     height: 3.8em;
