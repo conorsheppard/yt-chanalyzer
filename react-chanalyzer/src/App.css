@@ -1,14 +1,19 @@
 body {
     background-color: white;
-    padding: 40px;
+    /* padding: 40px; */
     font-family: Arial;
     text-align: center;
 }
 
 .search-bar-text {
-    padding: 10px;
+    padding-top: 2.5em;
+    padding-bottom: 1em;
     font-weight: bold;
     font-size: 1.2em;
+}
+
+.kubes-text {
+    color: #3C6FDE;
 }
 
 .search-bar-input {
@@ -27,7 +32,7 @@ body {
     border-color: #ccc;
     cursor: pointer;
     -webkit-border-radius: 5px;
-    border-radius: 5px;
+    border-radius: 5px; 
 }
 
 .line-graph {

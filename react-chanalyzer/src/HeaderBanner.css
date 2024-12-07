@@ -1,0 +1,25 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+}
+
+.header-banner {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+
+    background-color: #4c4b4b;
+    color: white;
+    height: 3.8em;
+
+    a {
+        color: #fdec96;
+    }
+}
+
+.kubes-logo {
+    width: 13px;
+}
