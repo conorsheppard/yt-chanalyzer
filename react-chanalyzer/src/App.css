@@ -1,15 +1,17 @@
 body {
     background-color: white;
-    /* padding: 40px; */
     font-family: Arial;
     text-align: center;
 }
 
 .search-bar-text {
-    padding-top: 2.5em;
     padding-bottom: 1em;
     font-weight: bold;
     font-size: 1.2em;
+    
+    @media (min-width:801px)  {
+        font-size: 1.4em;
+    }
 }
 
 .kubes-text {
@@ -19,10 +21,14 @@ body {
 .search-bar-input {
     padding: 5px;
     margin: 5px;
-    width: 500px;
+    width: 70%;
     border:2px solid #ccc;
     -webkit-border-radius: 5px;
     border-radius: 5px;
+
+    @media (min-width:801px)  {
+        width: 40%;
+    }
 }
 
 .submit-button {

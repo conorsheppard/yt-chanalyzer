@@ -18,10 +18,16 @@ body {
     justify-content: space-evenly;
 
     font-family: JetBrainsMonoMedium;
-    font-size: small;
+    font-size: xx-small;
     background-color: #4c4b4b;
     color: white;
-    height: 3.8em;
+    height: 10em;
+    padding: 1%;
+
+    @media (min-width:801px)  {
+        font-size: small;
+        height: 6em;
+    }
 
     a {
         color: #fdec96;
