@@ -30,8 +30,10 @@ function App() {
     axios.defaults.headers.get['Content-Type'] = 'application/x-www-form-urlencoded';
     axios.defaults.headers.get['Access-Control-Allow-Origin'] = '*';
 
-    console.log("sending request to backend service ...")
-    axios.get("http://k8s-ytchanal-ingressy-8a0d456b8d-995833085.eu-west-2.elb.amazonaws.com/api/channel?channelId=" + value).then(response => {
+    const scraper_api = process.env.REACT_APP_ANALYTICS_API;
+    console.log("current env: " + process.env.NODE_ENV);
+    console.log("sending request to backend service: " + scraper_api);
+    axios.get(scraper_api + "/api/channel?channelId=" + value).then(response => {
       graphData["labels"] = response.data["labels"];
       graphData["datasets"][0]["data"] = response.data["datasets"];
       
@@ -45,8 +47,8 @@ function App() {
     return (
       <>
         <form onSubmit={onSubmit}>
-          <div className="search-bar-text">Enter the YouTube channel ID</div>
-          <input className="search-bar-input" ref={inputRef} type="text" placeholder="UCz2iUx-Imr6HgDC3zAFpjOw" />
+          <div className="search-bar-text">Enter a YouTube channel URL</div>
+          <input className="search-bar-input" ref={inputRef} type="text" placeholder="https://www.youtube.com/@SWL2TON" />
           <button className="submit-button" type="submit">Submit</button>
         </form>
       </>

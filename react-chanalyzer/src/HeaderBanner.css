@@ -20,20 +20,27 @@ body {
 
 .header-banner {
     display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
+    flex-direction: row;
+    justify-content: center;
 
     font-family: JetBrainsMonoMedium;
     font-size: xx-small;
     background-color: #323232;
     color: white;
     height: 10em;
-    padding: 1%;
+    padding: 0.5%;
 
     @media (min-width:801px)  {
         font-size: small;
         height: 6em;
     }
+}
+
+.banner-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 85%;
 }
 
 .kubes-text {
@@ -42,7 +49,11 @@ body {
 }
 
 .kubes-logo {
-    width: 12px;
+    width: 8px;
+
+    @media (min-width:801px)  {
+        width: 11px;
+    }
 }
 
 .react-text {
@@ -51,7 +62,11 @@ body {
 }
 
 .react-logo {
-    width: 12px;
+    width: 8px;
+
+    @media (min-width:801px)  {
+        width: 11px;
+    }
 }
 
 .github-link {

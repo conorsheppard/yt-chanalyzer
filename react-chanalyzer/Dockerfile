@@ -4,6 +4,7 @@ FROM node:alpine
 WORKDIR /app
 # Copy package.json and package-lock.json to the container
 COPY package*.json ./
+COPY entrypoint.sh /
 # Install dependencies
 RUN npm install
 # Copy the rest of the application code to the container
@@ -12,4 +13,4 @@ COPY . .
 RUN npm run build
 EXPOSE 3000
 # Set the command to run the production build of the React app
-CMD ["npm", "start"]
+ENTRYPOINT ["sh", "../entrypoint.sh"]
