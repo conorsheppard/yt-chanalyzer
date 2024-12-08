@@ -36,6 +36,10 @@ body {
     }
 }
 
+.bold-text {
+    font-family: JetBrainsMonoExtraBoldItalic;
+}
+
 .banner-text {
     display: flex;
     flex-direction: column;
@@ -43,30 +47,36 @@ body {
     width: 85%;
 }
 
-.kubes-text {
-    color: #3C6FDE;
-    font-family: JetBrainsMonoExtraBoldItalic;
-}
-
-.kubes-logo {
+.icon-logo {
     width: 8px;
 
     @media (min-width:801px)  {
         width: 11px;
     }
+}
+
+.kubes-text {
+    color: #3C6FDE;
 }
 
 .react-text {
     color: rgb(53, 126, 152);
-    font-family: JetBrainsMonoExtraBoldItalic;
 }
 
-.react-logo {
-    width: 8px;
+.spring-boot-text {
+    color: rgb(125, 186, 86);
+}
 
-    @media (min-width:801px)  {
-        width: 11px;
-    }
+.java-text {
+    color: rgb(230, 148, 57);
+}
+
+.python-text {
+    color: rgb(247, 203, 75);
+}
+
+.eks-text {
+    color: rgb(75, 89, 170);
 }
 
 .github-link {
