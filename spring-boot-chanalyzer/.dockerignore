@@ -3,7 +3,7 @@
 # Include the src directory
 !src/
 !pom.xml
-!entrypoint.sh
+!application-prod.properties
 # Exclude the target directory and its contents
 target/
 

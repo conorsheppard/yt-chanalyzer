@@ -53,6 +53,8 @@ public class YTChannelDataController {
         List<String> datasets = new ArrayList<>();
         WebClient client = WebClient.create();
 
+        logger.info("api: {}", env.getProperty("scraper_api"));
+
         ArrayList<HashMap> responseBody = client.get()
                 .uri(env.getProperty("scraper_api") + "/scrape?channelUrl=" + channelUrl)
                 .retrieve()
