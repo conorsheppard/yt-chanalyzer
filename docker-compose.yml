@@ -15,3 +15,10 @@ services:
       - "3000:3000"
     links:
       - spring-boot-chanalyzer
+  scraper-service-chanalyzer:
+    image: "conorsheppard/scraper-service-chanalyzer"
+    container_name: scraper-service-chanalyzer
+    ports:
+      - "5050:5050"
+    links:
+      - spring-boot-chanalyzer

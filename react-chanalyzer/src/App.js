@@ -48,7 +48,7 @@ function App() {
       <>
         <form onSubmit={onSubmit}>
           <div className="search-bar-text">Enter a YouTube channel URL</div>
-          <input className="search-bar-input" ref={inputRef} type="text" placeholder="https://www.youtube.com/@SWL2TON" />
+          <input className="search-bar-input" ref={inputRef} type="text" placeholder="https://www.youtube.com/@NASA" />
           <button className="submit-button" type="submit">Submit</button>
         </form>
       </>

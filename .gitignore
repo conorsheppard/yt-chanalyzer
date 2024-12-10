@@ -62,3 +62,7 @@
 
 ### VS Code ###
 /spring-boot-chanalyzer/.vscode/
+
+# Flask App
+
+/flask-scraper-service/.idea

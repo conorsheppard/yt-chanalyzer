@@ -6,6 +6,12 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
+#    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-west-2:216989095985:certificate/6caa1b5c-572d-4e8e-a655-402f2d837c21
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:eu-west-2:216989095985:certificate/6caa1b5c-572d-4e8e-a655-402f2d837c21
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+#    alb.ingress.kubernetes.io/security-groups: sg-0b3e674f471b95795, sg-04b51da33d9b70737
 spec:
   ingressClassName: alb
   rules:
@@ -25,3 +31,10 @@ spec:
                 name: spring-boot-chanalyzer
                 port:
                   number: 8080
+          - path: /scraper
+            pathType: Prefix
+            backend:
+              service:
+                name: scraper-service-chanalyzer
+                port:
+                  number: 5000
