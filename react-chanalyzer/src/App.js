@@ -33,7 +33,7 @@ function App() {
     const scraper_api = process.env.REACT_APP_ANALYTICS_API;
     console.log("current env: " + process.env.NODE_ENV);
     console.log("sending request to backend service: " + scraper_api);
-    axios.get(scraper_api + "/api/channel?channelId=" + value).then(response => {
+    axios.get(scraper_api + "/api/channel?channelUrl=" + value).then(response => {
       graphData["labels"] = response.data["labels"];
       graphData["datasets"][0]["data"] = response.data["datasets"];
       

@@ -2,6 +2,8 @@ package com.youtube.chanalyzer.ytchanneldata;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,8 @@ import java.util.*;
 @RestController
 @RequestMapping("/api")
 public class YTChannelDataController {
+    @Autowired
+    private Environment env;
     Logger logger = LoggerFactory.getLogger(YTChannelDataController.class);
     List<String> labels = Arrays.asList("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
 
@@ -50,7 +54,7 @@ public class YTChannelDataController {
         WebClient client = WebClient.create();
 
         ArrayList<HashMap> responseBody = client.get()
-                .uri("http://localhost:5050/scrape?channelUrl=" + channelUrl)
+                .uri(env.getProperty("scraper_api") + "/scrape?channelUrl=" + channelUrl)
                 .retrieve()
                 .bodyToMono(ArrayList.class)
                 .block();

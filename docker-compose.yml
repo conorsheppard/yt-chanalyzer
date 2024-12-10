@@ -8,6 +8,8 @@ services:
       - "8080:8080"
     environment:
       - SPRING.PROFILES.ACTIVE=default
+    links:
+      - scraper-service-chanalyzer
   react-chanalyzer:
     image: "conorsheppard/react-chanalyzer"
     container_name: react-chanalyzer
@@ -20,5 +22,3 @@ services:
     container_name: scraper-service-chanalyzer
     ports:
       - "5050:5050"
-    links:
-      - spring-boot-chanalyzer
