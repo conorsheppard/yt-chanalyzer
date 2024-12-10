@@ -4,8 +4,8 @@ WORKDIR /app
 COPY . /app
 RUN pip3 install -r requirements.txt
 EXPOSE 5050
-CMD [ "python3", "-m" , "flask-scraper-service", "run", "--host=0.0.0.0"]
-
+#ENTRYPOINT ["sh", "entrypoint.sh"]
+CMD ["python", "flask-scraper-service.py"]
 
 # CMD python ./flask-scraper-service.py
 
