@@ -12,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
@@ -21,6 +22,8 @@ public class YTChannelDataController {
     private Environment env;
     Logger logger = LoggerFactory.getLogger(YTChannelDataController.class);
     List<String> labels = Arrays.asList("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
+    List<String> monthsShort = Arrays.asList("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+    WebClient client = WebClient.create();
 
     @GetMapping("/channel")
     public ResponseEntity<YTChannelDataResponseDTO> getChannelVideos(@RequestParam(required = true) String channelUrl) {
@@ -35,7 +38,7 @@ public class YTChannelDataController {
 
     private YTChannelDataResponseDTO getChannelAnalytics(String channelUrl) {
         YTChannelDataResponseDTO response = new YTChannelDataResponseDTO();
-        Map<String, Integer> monthsAndVideoViewsMap = new HashMap<>() {{
+        Map<String, Integer> monthsAndNumUploadsMap = new HashMap<>() {{
             put("Jan", 0);
             put("Feb", 0);
             put("Mar", 0);
@@ -51,27 +54,27 @@ public class YTChannelDataController {
         }};
 
         List<String> datasets = new ArrayList<>();
-        WebClient client = WebClient.create();
 
         logger.info("api: {}", env.getProperty("scraper_api"));
 
+        logger.info("Before request to scraper API");
         ArrayList<HashMap> responseBody = client.get()
                 .uri(env.getProperty("scraper_api") + "/scrape?channelUrl=" + channelUrl)
                 .retrieve()
                 .bodyToMono(ArrayList.class)
                 .block();
+        logger.info("After request to scraper API");
 
         System.out.println(responseBody);
 
         for (HashMap<String, String> res : responseBody) {
-            String viewsParsed = res.get("viewCount").substring(0, res.get("viewCount").length() - 6).replace(",", "");
-            int viewsAsInt = Integer.parseInt(viewsParsed);
+//            String viewsParsed = res.get("viewCount").substring(0, res.get("viewCount").length() - 6).replace(",", "");
             String videoDate = res.get("uploadDate");
-            String shortDate = videoDate.substring(0, 3);
-            monthsAndVideoViewsMap.put(shortDate, monthsAndVideoViewsMap.get(shortDate) + viewsAsInt);
+            String currentMonth = monthsShort.stream().filter(videoDate::contains).toList().getFirst();
+            monthsAndNumUploadsMap.put(currentMonth, monthsAndNumUploadsMap.get(currentMonth) + 1);
         }
         response.setLabels(labels);
-        for (Map.Entry<String, Integer> entry : monthsAndVideoViewsMap.entrySet()) {
+        for (Map.Entry<String, Integer> entry : monthsAndNumUploadsMap.entrySet()) {
             datasets.add(entry.getValue().toString());
         }
         response.setDatasets(datasets);

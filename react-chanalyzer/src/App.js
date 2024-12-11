@@ -20,7 +20,7 @@ function App() {
       labels: [],
       datasets: [
           {
-              label: "Video views",
+              label: "Number of uploads",
               data: [],
               borderColor: "green"
           }
@@ -36,6 +36,7 @@ function App() {
     axios.get(scraper_api + "/api/channel?channelUrl=" + value).then(response => {
       graphData["labels"] = response.data["labels"];
       graphData["datasets"][0]["data"] = response.data["datasets"];
+      graphData["channelName"] = inputRef.current.value;
       
       setGraphData(graphData)
     });
@@ -43,7 +44,6 @@ function App() {
     inputRef.current.value = ""
   }
 
-  if (isEmpty(graphData)) {
     return (
       <>
         <form onSubmit={onSubmit}>
@@ -51,18 +51,14 @@ function App() {
           <input className="search-bar-input" ref={inputRef} type="text" placeholder="https://www.youtube.com/@NASA" />
           <button className="submit-button" type="submit">Submit</button>
         </form>
+        { !isEmpty(graphData) &&
+          <div className="line-graph">
+            <h3>Videos Uploaded Per Month for {graphData.channelName}:</h3>
+            <LineGraph data={graphData} />
+          </div>
+        }
       </>
     )
-  }
-
-  return (
-    <>
-      <div className="line-graph">
-        <h3>Graph Data:</h3>
-        <LineGraph data={graphData} />
-      </div>
-    </>
-  )
 }
 
 function isEmpty(obj) {

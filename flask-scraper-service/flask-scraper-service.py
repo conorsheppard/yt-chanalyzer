@@ -7,10 +7,9 @@ app = Flask(__name__)
 
 @app.route("/scrape", methods=['GET'])
 def scrape():
-    print("hello ...")
     channel_url = request.args.get('channelUrl')
     print(channel_url)
-    videos = scrapetube.get_channel(None, channel_url, None, 5, 0.01)
+    videos = scrapetube.get_channel(None, channel_url, None, 1, 0.01)
     response = []
 
     for video in videos:
