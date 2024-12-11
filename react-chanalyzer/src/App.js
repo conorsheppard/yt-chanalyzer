@@ -34,7 +34,7 @@ function App() {
     const scraper_api = process.env.REACT_APP_ANALYTICS_API;
     console.log("current env: " + process.env.NODE_ENV);
     console.log("sending request to backend service: " + scraper_api);
-    axios.get(scraper_api + "/api/channel?channelUrl=" + value).then(response => {
+    axios.get(scraper_api + "/api/channel?channelUrl=https://www.youtube.com/" + value).then(response => {
       graphData["labels"] = response.data["labels"];
       graphData["datasets"][0]["data"] = response.data["datasets"];
       graphData["channelName"] = value.replace("https://www.youtube.com/", "");
@@ -49,8 +49,11 @@ function App() {
       <>
         <form onSubmit={onSubmit}>
           <div className="search-bar-text">Enter the YouTube channel name</div>
-          <input className="search-bar-prefix-link" placeholder="https://www.youtube.com/" /><input className="search-bar-input" ref={inputRef} type="text" placeholder="@NASA" />
-          <button className="submit-button" type="submit">Submit</button>
+          <div className="search-bar-elements">
+            <div className="search-bar-prefix-link">https://www.youtube.com/</div>
+            <input className="search-bar-input" ref={inputRef} type="text" placeholder="@NASA" />
+            <button className="submit-button" type="submit">Submit</button>
+          </div>
         </form>
         { !isEmpty(graphData) &&
           <div className="line-graph">

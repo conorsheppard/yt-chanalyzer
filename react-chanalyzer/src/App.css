@@ -4,12 +4,6 @@ body {
     text-align: center;
 }
 
-form {
-    input::placeholder {
-        text-align: right;
-    } 
-}
-
 .search-bar-text {
     padding-bottom: 1em;
     font-weight: bold;
@@ -20,9 +14,17 @@ form {
     }
 }
 
+.search-bar-elements {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
 .search-bar-input {
     padding: 5px;
-    margin: 5px;
+    margin-right: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
     width: 70%;
     border:2px solid #ccc;
     -webkit-border-radius: 5px;
@@ -38,15 +40,17 @@ form {
 
 .search-bar-prefix-link {
     padding: 5px;
-    margin: 5px;
-    width: 170px;
+    margin-right: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
     border:2px solid #ccc;
-    background-color: rgb(28, 28, 28);
+    color: white;
+    background-color: #323232;
     -webkit-border-radius: 5px;
     border-radius: 5px;
 
     @media (min-width:801px)  {
-        width: 170px;
+        width: 195px;
     }
 }
 
