@@ -66,3 +66,4 @@
 # Flask App
 
 /flask-scraper-service/.idea
+__pycache__/

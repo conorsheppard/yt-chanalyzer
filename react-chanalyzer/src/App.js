@@ -8,7 +8,7 @@ function App() {
 
   function onSubmit(e) {
     e.preventDefault()
-
+    let graphData = null;
     const value = inputRef.current.value
 
     if (value === "") {
@@ -16,7 +16,7 @@ function App() {
       return
     }
 
-    let graphData = {
+    graphData = {
       labels: [],
       datasets: [
           {
@@ -25,6 +25,7 @@ function App() {
               borderColor: "green"
           }
       ],
+      channelName: ""
     };
 
     axios.defaults.headers.get['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -36,7 +37,7 @@ function App() {
     axios.get(scraper_api + "/api/channel?channelUrl=" + value).then(response => {
       graphData["labels"] = response.data["labels"];
       graphData["datasets"][0]["data"] = response.data["datasets"];
-      graphData["channelName"] = inputRef.current.value;
+      graphData["channelName"] = value.replace("https://www.youtube.com/", "");
       
       setGraphData(graphData)
     });
@@ -47,13 +48,13 @@ function App() {
     return (
       <>
         <form onSubmit={onSubmit}>
-          <div className="search-bar-text">Enter a YouTube channel URL</div>
-          <input className="search-bar-input" ref={inputRef} type="text" placeholder="https://www.youtube.com/@NASA" />
+          <div className="search-bar-text">Enter the YouTube channel name</div>
+          <input className="search-bar-prefix-link" placeholder="https://www.youtube.com/" /><input className="search-bar-input" ref={inputRef} type="text" placeholder="@NASA" />
           <button className="submit-button" type="submit">Submit</button>
         </form>
         { !isEmpty(graphData) &&
           <div className="line-graph">
-            <h3>Videos Uploaded Per Month for {graphData.channelName}:</h3>
+            <h3>Videos Uploaded Per Month: <a href={"https://www.youtube.com/" + graphData["channelName"]} target="_blank" rel="noreferrer">{graphData["channelName"]}</a></h3>
             <LineGraph data={graphData} />
           </div>
         }

@@ -9,7 +9,7 @@ app = Flask(__name__)
 def scrape():
     channel_url = request.args.get('channelUrl')
     print(channel_url)
-    videos = scrapetube.get_channel(None, channel_url, None, 1, 0.01)
+    videos = scrapetube.get_channel(None, channel_url, None, 16, 0.01)
     response = []
 
     for video in videos:

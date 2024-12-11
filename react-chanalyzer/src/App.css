@@ -4,6 +4,12 @@ body {
     text-align: center;
 }
 
+form {
+    input::placeholder {
+        text-align: right;
+    } 
+}
+
 .search-bar-text {
     padding-bottom: 1em;
     font-weight: bold;
@@ -21,9 +27,26 @@ body {
     border:2px solid #ccc;
     -webkit-border-radius: 5px;
     border-radius: 5px;
+    input::placeholder {
+        text-align: left;
+    } 
 
     @media (min-width:801px)  {
         width: 40%;
+    }
+}
+
+.search-bar-prefix-link {
+    padding: 5px;
+    margin: 5px;
+    width: 170px;
+    border:2px solid #ccc;
+    background-color: rgb(28, 28, 28);
+    -webkit-border-radius: 5px;
+    border-radius: 5px;
+
+    @media (min-width:801px)  {
+        width: 170px;
     }
 }
 
@@ -48,7 +71,7 @@ body {
     }
 
     @media (min-width:801px)  {
-        width: 70%;
+        width: 65%;
         margin-left: 2em;
     }
 }
