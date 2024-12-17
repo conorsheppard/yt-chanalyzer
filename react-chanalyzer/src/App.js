@@ -47,20 +47,24 @@ function App() {
 
     return (
       <>
-        <form onSubmit={onSubmit}>
-          <div className="search-bar-text">Enter the YouTube channel name</div>
-          <div className="search-bar-elements">
-            <div className="search-bar-prefix-link">https://www.youtube.com/</div>
-            <input className="search-bar-input" ref={inputRef} type="text" placeholder="@NASA" />
-            <button className="submit-button" type="submit">Submit</button>
+        <div className="all-elements">
+          <div className="search-bar-and-graph">
+            <form onSubmit={onSubmit}>
+              <div className="search-bar-text">Enter the YouTube channel name</div>
+              <div className="search-bar-elements">
+                <div className="search-bar-prefix-link">https://www.youtube.com/</div>
+                <input className="search-bar-input" ref={inputRef} type="text" placeholder="@NASA" />
+                <button className="submit-button" type="submit">Submit</button>
+              </div>
+            </form>
+            { !isEmpty(graphData) &&
+              <div className="line-graph">
+                <h3>Videos Uploaded Per Month: <a href={"https://www.youtube.com/" + graphData["channelName"]} target="_blank" rel="noreferrer">{graphData["channelName"]}</a></h3>
+                <LineGraph data={graphData} />
+              </div>
+            }
           </div>
-        </form>
-        { !isEmpty(graphData) &&
-          <div className="line-graph">
-            <h3>Videos Uploaded Per Month: <a href={"https://www.youtube.com/" + graphData["channelName"]} target="_blank" rel="noreferrer">{graphData["channelName"]}</a></h3>
-            <LineGraph data={graphData} />
-          </div>
-        }
+        </div>
       </>
     )
 }

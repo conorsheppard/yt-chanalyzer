@@ -4,6 +4,25 @@ body {
     text-align: center;
 }
 
+.all-elements {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+}
+
+.search-bar-and-graph {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 90%;
+    padding: 5%;
+
+    @media (min-width:801px)  {
+        width: 70%;
+    }
+}
+
 .search-bar-text {
     padding-bottom: 1em;
     font-weight: bold;
@@ -25,17 +44,12 @@ body {
     margin-right: 5px;
     margin-top: 5px;
     margin-bottom: 5px;
-    width: 70%;
     border:2px solid #ccc;
     -webkit-border-radius: 5px;
     border-radius: 5px;
     input::placeholder {
         text-align: left;
     } 
-
-    @media (min-width:801px)  {
-        width: 40%;
-    }
 }
 
 .search-bar-prefix-link {
@@ -75,7 +89,6 @@ body {
     }
 
     @media (min-width:801px)  {
-        width: 65%;
         margin-left: 2em;
     }
 }

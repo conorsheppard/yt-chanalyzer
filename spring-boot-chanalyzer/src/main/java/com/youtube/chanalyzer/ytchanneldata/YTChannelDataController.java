@@ -25,6 +25,11 @@ public class YTChannelDataController {
     List<String> monthsShort = Arrays.asList("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
     WebClient client = WebClient.create();
 
+    @GetMapping("/health")
+    public ResponseEntity<YTChannelDataResponseDTO> getHealthCheck() {
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
     @GetMapping("/channel")
     public ResponseEntity<YTChannelDataResponseDTO> getChannelVideos(@RequestParam(required = true) String channelUrl) {
         logger.info(channelUrl);

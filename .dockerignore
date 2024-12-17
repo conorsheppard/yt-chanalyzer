@@ -1,0 +1,86 @@
+# flyctl launch added from .gitignore
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# React App
+
+# dependencies
+react-chanalyzer/node_modules
+react-chanalyzer/.pnp
+react-chanalyzer/.pnp.js
+
+# testing
+react-chanalyzer/coverage
+
+# production
+react-chanalyzer/build
+
+# misc
+react-chanalyzer/.DS_Store
+react-chanalyzer/.env.local
+react-chanalyzer/.env.development.local
+react-chanalyzer/.env.test.local
+react-chanalyzer/.env.production.local
+
+react-chanalyzer/npm-debug.log*
+react-chanalyzer/yarn-debug.log*
+react-chanalyzer/yarn-error.log*
+
+react-chanalyzer/.vscode
+
+
+# Spring Boot App
+
+spring-boot-chanalyzer/HELP.md
+spring-boot-chanalyzer/target
+spring-boot-chanalyzer/!.mvn/wrapper/maven-wrapper.jar
+spring-boot-chanalyzer/!**/src/main/**/target
+spring-boot-chanalyzer/!**/src/test/**/target
+
+### STS ###
+spring-boot-chanalyzer/.apt_generated
+spring-boot-chanalyzer/.classpath
+spring-boot-chanalyzer/.factorypath
+spring-boot-chanalyzer/.project
+spring-boot-chanalyzer/.settings
+spring-boot-chanalyzer/.springBeans
+spring-boot-chanalyzer/.sts4-cache
+
+### IntelliJ IDEA ###
+spring-boot-chanalyzer/.idea
+spring-boot-chanalyzer/*.iws
+spring-boot-chanalyzer/*.iml
+spring-boot-chanalyzer/*.ipr
+
+### NetBeans ###
+spring-boot-chanalyzer/nbproject/private
+spring-boot-chanalyzer/nbbuild
+spring-boot-chanalyzer/dist
+spring-boot-chanalyzer/nbdist
+spring-boot-chanalyzer/.nb-gradle
+spring-boot-chanalyzer/build
+spring-boot-chanalyzer/!**/src/main/**/build
+spring-boot-chanalyzer/!**/src/test/**/build
+
+### VS Code ###
+spring-boot-chanalyzer/.vscode
+
+# Flask App
+
+flask-scraper-service/.idea
+**/__pycache__
+
+# flyctl launch added from .idea/.gitignore
+# Default ignored files
+.idea/shelf
+.idea/workspace.xml
+
+# flyctl launch added from react-chanalyzer/.idea/.gitignore
+# Default ignored files
+react-chanalyzer/.idea/shelf
+react-chanalyzer/.idea/workspace.xml
+
+# flyctl launch added from spring-boot-chanalyzer/.idea/.gitignore
+# Default ignored files
+spring-boot-chanalyzer/.idea/shelf
+spring-boot-chanalyzer/.idea/workspace.xml
+fly.toml

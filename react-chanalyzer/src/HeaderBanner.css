@@ -16,6 +16,14 @@
 
 body {
     margin: 0;
+    width: 100%;
+}
+
+.all-elements {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
 }
 
 .header-banner {
@@ -23,6 +31,7 @@ body {
     flex-direction: row;
     justify-content: center;
 
+    width: 100%;
     font-family: JetBrainsMonoMedium;
     font-size: xx-small;
     background-color: #323232;

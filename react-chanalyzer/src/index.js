@@ -8,7 +8,7 @@ import './HeaderBanner.css'
 const root = ReactDOM.createRoot(document.getElementById("root"))
 root.render(
   <React.StrictMode>
-    <HeaderBanner /><br /><br /><br />
+    <HeaderBanner />
     <App />
   </React.StrictMode>
 )
