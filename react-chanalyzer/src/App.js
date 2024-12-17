@@ -47,8 +47,8 @@ function App() {
 
     return (
       <>
-        <div className="all-elements">
-          <div className="search-bar-and-graph">
+        <div className="search-bar-and-graph">
+          <div className="search-bar-form-and-text">
             <form onSubmit={onSubmit}>
               <div className="search-bar-text">Enter the YouTube channel name</div>
               <div className="search-bar-elements">
@@ -57,13 +57,13 @@ function App() {
                 <button className="submit-button" type="submit">Submit</button>
               </div>
             </form>
-            { !isEmpty(graphData) &&
-              <div className="line-graph">
-                <h3>Videos Uploaded Per Month: <a href={"https://www.youtube.com/" + graphData["channelName"]} target="_blank" rel="noreferrer">{graphData["channelName"]}</a></h3>
-                <LineGraph data={graphData} />
-              </div>
-            }
           </div>
+          { !isEmpty(graphData) &&
+            <div className="line-graph">
+              <h3>Videos Uploaded Per Month: <a href={"https://www.youtube.com/" + graphData["channelName"]} target="_blank" rel="noreferrer">{graphData["channelName"]}</a></h3>
+              <LineGraph data={graphData} />
+            </div>
+          }
         </div>
       </>
     )
