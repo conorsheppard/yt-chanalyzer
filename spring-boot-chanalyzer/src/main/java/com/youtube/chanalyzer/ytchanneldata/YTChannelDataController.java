@@ -12,6 +12,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -21,8 +23,6 @@ public class YTChannelDataController {
     @Autowired
     private Environment env;
     Logger logger = LoggerFactory.getLogger(YTChannelDataController.class);
-    List<String> labels = Arrays.asList("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
-    List<String> monthsShort = Arrays.asList("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
     WebClient client = WebClient.create();
 
     @GetMapping("/health")
@@ -31,53 +31,39 @@ public class YTChannelDataController {
     }
 
     @GetMapping("/channel")
-    public ResponseEntity<YTChannelDataResponseDTO> getChannelVideos(@RequestParam(required = true) String channelUrl) {
-        logger.info(channelUrl);
+    public ResponseEntity<YTChannelDataResponseDTO> getChannelVideos(@RequestParam String channelUrl,
+                                                                     @RequestParam int numVideos) {
+        logger.info("channelUrl: {}, numVideos: {}", channelUrl, numVideos);
         try {
-            YTChannelDataResponseDTO response = getChannelAnalytics(channelUrl);
+            YTChannelDataResponseDTO response = getChannelAnalytics(channelUrl, numVideos);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    private YTChannelDataResponseDTO getChannelAnalytics(String channelUrl) {
+    private YTChannelDataResponseDTO getChannelAnalytics(String channelUrl, int numVideos) {
         YTChannelDataResponseDTO response = new YTChannelDataResponseDTO();
-        Map<String, Integer> monthsAndNumUploadsMap = new HashMap<>() {{
-            put("Jan", 0);
-            put("Feb", 0);
-            put("Mar", 0);
-            put("Apr", 0);
-            put("May", 0);
-            put("Jun", 0);
-            put("Jul", 0);
-            put("Aug", 0);
-            put("Sep", 0);
-            put("Oct", 0);
-            put("Nov", 0);
-            put("Dec", 0);
-        }};
+        Map<String, Integer> monthsAndNumUploadsMap = new HashMap<>();
 
         List<String> datasets = new ArrayList<>();
-
-        logger.info("api: {}", env.getProperty("scraper_api"));
-
-        logger.info("Before request to scraper API");
         ArrayList<HashMap> responseBody = client.get()
-                .uri(env.getProperty("scraper_api") + "/scrape?channelUrl=" + channelUrl)
+                .uri(env.getProperty("scraper_api") + "/scrape?channelUrl=" + channelUrl + "&numVideos=" + numVideos)
                 .retrieve()
                 .bodyToMono(ArrayList.class)
                 .block();
-        logger.info("After request to scraper API");
-
-        System.out.println(responseBody);
 
         for (HashMap<String, String> res : responseBody) {
-//            String viewsParsed = res.get("viewCount").substring(0, res.get("viewCount").length() - 6).replace(",", "");
             String videoDate = res.get("uploadDate");
-            String currentMonth = monthsShort.stream().filter(videoDate::contains).toList().getFirst();
-            monthsAndNumUploadsMap.put(currentMonth, monthsAndNumUploadsMap.get(currentMonth) + 1);
+            Pattern pattern = Pattern.compile("( \\d{1,2},)");
+            Matcher matcher = pattern.matcher(videoDate);
+            matcher.find();
+            matcher.group(0);
+            String currentMonthAndYear = videoDate.replace(matcher.group(0), ",");
+            var currentMonthValue = monthsAndNumUploadsMap.get(currentMonthAndYear) == null ? 0 : monthsAndNumUploadsMap.get(currentMonthAndYear);
+            monthsAndNumUploadsMap.put(currentMonthAndYear, currentMonthValue + 1);
         }
+        List<String> labels = new ArrayList<>(monthsAndNumUploadsMap.keySet());
         response.setLabels(labels);
         for (Map.Entry<String, Integer> entry : monthsAndNumUploadsMap.entrySet()) {
             datasets.add(entry.getValue().toString());
