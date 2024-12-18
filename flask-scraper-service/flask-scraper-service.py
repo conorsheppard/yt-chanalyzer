@@ -24,7 +24,7 @@ def scrape():
         obj['uploadDate'] = video_data["dateText"]["simpleText"]
         obj['viewCount'] = video["viewCountText"]["simpleText"]
         response.append(obj)
-    
+
     return response
 
 if __name__ == '__main__':

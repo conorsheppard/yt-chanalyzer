@@ -1,51 +1,45 @@
-import { useRef, useState } from "react"
-import axios from 'axios';
+import {useState, useRef} from 'react';
 import { LineGraph } from "./Line";
 
+const scraperApi = process.env.REACT_APP_ANALYTICS_API;
+const ytBaseUrl = "https://www.youtube.com/";
+
 function App() {
-  const [graphData, setGraphData] = useState([])
-  const inputRef = useRef()
+  const [graphData, setGraphData] = useState([]);
+  const [interval, setInterval] = useState();
+  const inputRef = useRef();
 
   function onSubmit(e) {
-    e.preventDefault()
-    let graphData = null;
-    const value = inputRef.current.value
+    e.preventDefault();
+    const value = inputRef.current.value;
 
     if (value === "") {
       console.log("returning ...")
       return
     }
 
-    graphData = {
-      labels: [],
-      datasets: [
-          {
-              label: "Number of uploads",
-              data: [],
-              borderColor: "green"
-          }
-      ],
-      channelName: ""
-    };
+    const eventSource = new EventSource(`${scraperApi}/channel?channelUrl=${ytBaseUrl}${value}`);
+    inputRef.current.value = "";
 
-    axios.defaults.headers.get['Content-Type'] = 'application/x-www-form-urlencoded';
-    axios.defaults.headers.get['Access-Control-Allow-Origin'] = '*';
+    eventSource.onmessage = event => {
+        const eventData = JSON.parse(event.data);
+        let graphDataInitialised = initialiseGraph();
+        graphDataInitialised["labels"] = eventData["labels"];
+        graphDataInitialised["channelName"] = value;
+        graphDataInitialised["datasets"][0]["data"] = eventData["datasets"];
+        setGraphData(graphDataInitialised);
+        setInterval(eventData["currentInterval"]);
 
-    const scraper_api = process.env.REACT_APP_ANALYTICS_API;
-    console.log("current env: " + process.env.NODE_ENV);
-    console.log("sending request to backend service: " + scraper_api);
-    axios.get(scraper_api + "/api/channel?channelUrl=https://www.youtube.com/" + value + "&numVideos=3").then(response => {
-      graphData["labels"] = response.data["labels"];
-      graphData["datasets"][0]["data"] = response.data["datasets"];
-      graphData["channelName"] = value.replace("https://www.youtube.com/", "");
-      
-      setGraphData(graphData)
-    });
+        if (eventData["currentInterval"] == 32) {
+            console.log("Closing SSE connection");
+            eventSource.close();
+        }
+    }
 
-    inputRef.current.value = ""
-  }
+    return () => eventSource.close();
+  };
 
-    return (
+  return (
       <>
         <div className="search-bar-and-graph">
           <div className="search-bar-form-and-text">
@@ -60,13 +54,14 @@ function App() {
           </div>
           { !isEmpty(graphData) &&
             <div className="line-graph">
-              <h3>Videos Uploaded Per Month: <a href={"https://www.youtube.com/" + graphData["channelName"]} target="_blank" rel="noreferrer">{graphData["channelName"]}</a></h3>
+              <h3>Videos Uploaded Per Month: <a href={ytBaseUrl + graphData["channelName"]} target="_blank" rel="noreferrer">{graphData["channelName"]}</a></h3>
+              <div>{typeof(interval) === 'undefined' ? 0 : interval}/32 videos processed</div>
               <LineGraph data={graphData} />
             </div>
           }
         </div>
       </>
-    )
+  )
 }
 
 function isEmpty(obj) {
@@ -77,6 +72,20 @@ function isEmpty(obj) {
   }
 
   return true;
+}
+
+function initialiseGraph() {
+  return {
+    labels: [],
+    datasets: [
+        {
+            label: "Number of uploads",
+            data: [],
+            borderColor: "green"
+        }
+    ],
+    channelName: ""
+  };
 }
 
 export default App

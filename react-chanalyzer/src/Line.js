@@ -20,8 +20,8 @@ ChartJS.register(
     Legend
 );
 
-export const LineGraph = (graphData) => {
+export const LineGraph = (data) => {
     const options = {};
     
-    return <Line options={options} data={graphData["data"]} />;
+    return <Line options={options} data={data["data"]} />;
 }
