@@ -1,6 +1,5 @@
 package com.youtube.chanalyzer.ytchanneldata;
 
-import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +27,6 @@ public class YTChannelDataController {
     private final WebClient client = WebClient.create();
     private final int[] videoQuantityIntervals = new int[]{1, 2, 4, 8, 16, 24, 32, 48, 64};
 
-    @Data
     class UrlVideos {
         String channelUrl;
         int numVideos;
@@ -40,6 +38,14 @@ public class YTChannelDataController {
         public UrlVideos setChannelUrl(String channelUrl) {
             this.channelUrl = channelUrl;
             return this;
+        }
+
+        String getChannelUrl() {
+            return channelUrl;
+        }
+
+        int getNumVideos() {
+            return numVideos;
         }
     }
 
