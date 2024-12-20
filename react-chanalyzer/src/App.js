@@ -22,7 +22,11 @@ function App() {
     inputRef.current.value = "";
 
     eventSource.onmessage = event => {
+      console.log("event:")
+        console.log(event)
         const eventData = JSON.parse(event.data);
+        console.log("eventData:")
+        console.log(eventData)
         let graphDataInitialised = initialiseGraph();
         graphDataInitialised["labels"] = eventData["labels"];
         graphDataInitialised["channelName"] = value;
@@ -30,7 +34,7 @@ function App() {
         setGraphData(graphDataInitialised);
         setInterval(eventData["currentInterval"]);
 
-        if (eventData["currentInterval"] == 32) {
+        if (eventData["currentInterval"] == 64) {
             console.log("Closing SSE connection");
             eventSource.close();
         }
@@ -55,7 +59,7 @@ function App() {
           { !isEmpty(graphData) &&
             <div className="line-graph">
               <h3>Videos Uploaded Per Month: <a href={ytBaseUrl + graphData["channelName"]} target="_blank" rel="noreferrer">{graphData["channelName"]}</a></h3>
-              <div>{typeof(interval) === 'undefined' ? 0 : interval}/32 videos processed</div>
+              <div>{typeof(interval) === 'undefined' ? 0 : interval}/64 videos processed</div>
               <LineGraph data={graphData} />
             </div>
           }

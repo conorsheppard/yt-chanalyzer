@@ -1,5 +1,6 @@
 package com.youtube.chanalyzer.ytchanneldata;
 
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
@@ -23,7 +26,22 @@ public class YTChannelDataController {
     private Environment env;
     private final Logger logger = LoggerFactory.getLogger(YTChannelDataController.class);
     private final WebClient client = WebClient.create();
-    private final int[] videoQuantityIntervals = new int[]{1, 2, 4, 8, 16, 32};
+    private final int[] videoQuantityIntervals = new int[]{1, 2, 4, 8, 16, 24, 32, 48, 64};
+
+    @Data
+    class UrlVideos {
+        String channelUrl;
+        int numVideos;
+
+        UrlVideos(int numVideos) {
+            this.numVideos = numVideos;
+        }
+
+        public UrlVideos setChannelUrl(String channelUrl) {
+            this.channelUrl = channelUrl;
+            return this;
+        }
+    }
 
     @GetMapping("/health")
     public ResponseEntity getHealthCheck() {
@@ -32,31 +50,33 @@ public class YTChannelDataController {
 
     @GetMapping(path = "/channel", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<YTChannelDataResponseDTO> getChannelVideos(@RequestParam String channelUrl) {
-        List<Flux> fluxList = getFluxes(channelUrl);
-        fluxList.forEach(Flux::subscribe);
-        Flux response = Flux.empty();
-        for (var f : fluxList) response = Flux.concat(response, f);
-        return response;
+        var currentUrlVideos = Arrays
+                .stream(videoQuantityIntervals)
+                .mapToObj(UrlVideos::new)
+                .map(c -> c.setChannelUrl(channelUrl))
+                .collect(Collectors.toList());
+
+        var fluxFromIterable = Flux
+                .fromIterable(currentUrlVideos)
+                .flatMap(this::getScrapeResponse);
+
+        fluxFromIterable.subscribe();
+
+        return fluxFromIterable;
     }
 
-    private List<Flux> getFluxes(String channelUrl) {
-        List<Flux> fluxList = new ArrayList<>();
-        for (int i : videoQuantityIntervals) fluxList.add(createWebClient(channelUrl, i));
-        return fluxList;
-    }
-
-    Flux<YTChannelDataResponseDTO> createWebClient(String channelUrl, int numVideos) {
+    private Mono<YTChannelDataResponseDTO> getScrapeResponse(UrlVideos urlVideos) {
         return client.get()
-                .uri(env.getProperty("scraper_api") + "/scrape?channelUrl=" + channelUrl + "&numVideos=" + numVideos)
+                .uri(env.getProperty("scraper_api") + "/scrape?channelUrl=" + urlVideos.getChannelUrl() + "&numVideos=" + urlVideos.getNumVideos())
                 .retrieve()
-                .bodyToFlux(ArrayList.class)
+                .bodyToMono(ArrayList.class)
                 .map(YTChannelDataResponseDTO::new)
-                .map(yt -> yt.setCurrentInterval(numVideos));
+                .map(yt -> yt.setCurrentInterval(urlVideos.getNumVideos()));
     }
 
     public static YTChannelDataResponseDTO sanitiseResponse(ArrayList<HashMap<String, String>> responseBody) {
         YTChannelDataResponseDTO response = new YTChannelDataResponseDTO();
-        Map<String, Integer> monthsAndNumUploadsMap = new HashMap<>();
+        LinkedHashMap<String, Integer> monthsAndNumUploadsMap = new LinkedHashMap<>();
         List<String> datasets = new ArrayList<>();
 
         for (HashMap<String, String> res : responseBody) {

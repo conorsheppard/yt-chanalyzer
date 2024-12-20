@@ -15,7 +15,6 @@ public class YTChannelDataResponseDTO {
         var res = YTChannelDataController.sanitiseResponse(l);
         this.labels = res.labels;
         this.datasets = res.datasets;
-
     }
 
     public List<String> getLabels() {
