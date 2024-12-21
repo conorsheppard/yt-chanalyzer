@@ -24,23 +24,20 @@ function App() {
     inputRef.current.value = "";
 
     eventSource.onmessage = event => {
-      console.log("event:")
-        console.log(event)
-        const eventData = JSON.parse(event.data);
-        console.log("eventData:")
-        console.log(eventData)
-        let graphDataInitialised = initialiseGraph();
-        graphDataInitialised["labels"] = eventData["labels"];
-        graphDataInitialised["channelName"] = value;
-        graphDataInitialised["datasets"][0]["data"] = eventData["datasets"];
-        setGraphData(graphDataInitialised);
-        setInterval(eventData["currentInterval"]);
-
-        if (eventData["currentInterval"] === 64) {
-            console.log("Closing SSE connection");
-            eventSource.close();
-            setProcessingComplete(true);
-        }
+      const eventData = JSON.parse(event.data);
+      let graphDataInitialised = initialiseGraph();
+      graphDataInitialised["labels"] = eventData["labels"];
+      graphDataInitialised["channelName"] = value;
+      graphDataInitialised["datasets"][0]["data"] = eventData["datasets"];
+      setGraphData(graphDataInitialised);
+      setInterval(eventData["currentInterval"]);
+      console.log("graphData:");
+      console.log(graphData);
+      if (eventData["currentInterval"] === 64) {
+          console.log("Closing SSE connection");
+          eventSource.close();
+          setProcessingComplete(true);
+      }
     }
 
     return () => eventSource.close();
@@ -86,6 +83,9 @@ function initialiseGraph() {
     labels: [],
     datasets: [
         {
+            backgroundColor: ["rgba(99, 255, 180, 0.5)"],
+            borderColor: "rgba(200, 38, 13, 0.78)",
+            borderWidth: 2,
             label: "Number of uploads",
             data: [],
             borderColor: "green"
