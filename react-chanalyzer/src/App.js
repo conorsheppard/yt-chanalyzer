@@ -87,12 +87,14 @@ function initialiseGraph() {
     labels: [],
     datasets: [
         {
-            backgroundColor: ["rgba(99, 255, 180, 0.5)"],
-            borderColor: "rgba(200, 38, 13, 0.78)",
+            backgroundColor: ["rgba(28, 183, 226, 0.4)"],
+            borderColor: ["rgba(233, 160, 52, 0.4)"],
             borderWidth: 2,
             label: "Number of uploads",
             data: [],
-            borderColor: "green"
+            hoverBorderWidth: 3,
+            borderRadius: 3,
+            hoverBorderRadius: 4,
         }
     ],
     channelName: ""
