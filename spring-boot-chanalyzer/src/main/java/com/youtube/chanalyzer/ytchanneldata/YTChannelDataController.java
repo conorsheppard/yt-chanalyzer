@@ -27,15 +27,15 @@ public class YTChannelDataController {
     private final WebClient client = WebClient.create();
     private final int[] videoQuantityIntervals = new int[]{1, 2, 4, 8, 16, 24, 32, 48, 64};
 
-    class UrlVideos {
+    class ChannelAndNumVideos {
         String channelUrl;
         int numVideos;
 
-        UrlVideos(int numVideos) {
+        ChannelAndNumVideos(int numVideos) {
             this.numVideos = numVideos;
         }
 
-        public UrlVideos setChannelUrl(String channelUrl) {
+        public ChannelAndNumVideos setChannelUrl(String channelUrl) {
             this.channelUrl = channelUrl;
             return this;
         }
@@ -58,7 +58,7 @@ public class YTChannelDataController {
     public Flux<YTChannelDataResponseDTO> getChannelVideos(@RequestParam String channelUrl) {
         var currentUrlVideos = Arrays
                 .stream(videoQuantityIntervals)
-                .mapToObj(UrlVideos::new)
+                .mapToObj(ChannelAndNumVideos::new)
                 .map(c -> c.setChannelUrl(channelUrl))
                 .collect(Collectors.toList());
 
@@ -71,13 +71,13 @@ public class YTChannelDataController {
         return fluxFromIterable;
     }
 
-    private Mono<YTChannelDataResponseDTO> getScrapeResponse(UrlVideos urlVideos) {
+    private Mono<YTChannelDataResponseDTO> getScrapeResponse(ChannelAndNumVideos channelAndNumVideos) {
         return client.get()
-                .uri(env.getProperty("scraper_api") + "/scrape?channelUrl=" + urlVideos.getChannelUrl() + "&numVideos=" + urlVideos.getNumVideos())
+                .uri(env.getProperty("scraper_api") + "?channelUrl=" + channelAndNumVideos.getChannelUrl() + "&numVideos=" + channelAndNumVideos.getNumVideos())
                 .retrieve()
                 .bodyToMono(ArrayList.class)
                 .map(YTChannelDataResponseDTO::new)
-                .map(yt -> yt.setCurrentInterval(urlVideos.getNumVideos()));
+                .map(yt -> yt.setCurrentInterval(channelAndNumVideos.getNumVideos()));
     }
 
     public static YTChannelDataResponseDTO sanitiseResponse(ArrayList<HashMap<String, String>> responseBody) {
