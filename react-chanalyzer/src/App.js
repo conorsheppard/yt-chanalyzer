@@ -1,5 +1,6 @@
 import {useState, useRef} from 'react';
 import { BarChart } from "./BarChart";
+import Button from './Button';
 
 const scraperApi = process.env.REACT_APP_ANALYTICS_API;
 const ytBaseUrl = "https://www.youtube.com/";
@@ -8,22 +9,26 @@ function App() {
   const [graphData, setGraphData] = useState([]);
   const [interval, setInterval] = useState();
   const [processingComplete, setProcessingComplete] = useState(false);
+  const [placeHolder, setPlaceHolder] = useState("@NASA");
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef();
 
   function onSubmit(e) {
     e.preventDefault();
-    setProcessingComplete(false);
     const value = inputRef.current.value;
-
     if (value === "") {
       console.log("returning ...")
       return
     }
 
+    setPlaceHolder(value);
+    setLoading(true);
+    setProcessingComplete(false);
     const eventSource = new EventSource(`${scraperApi}/channel?channelUrl=${ytBaseUrl}${value}`);
     inputRef.current.value = "";
 
     eventSource.onmessage = event => {
+      setLoading(false);
       const eventData = JSON.parse(event.data);
       let graphDataInitialised = initialiseGraph();
       graphDataInitialised["labels"] = eventData["labels"];
@@ -31,8 +36,7 @@ function App() {
       graphDataInitialised["datasets"][0]["data"] = eventData["datasets"];
       setGraphData(graphDataInitialised);
       setInterval(eventData["currentInterval"]);
-      console.log("graphData:");
-      console.log(graphData);
+
       if (eventData["currentInterval"] === 64) {
           console.log("Closing SSE connection");
           eventSource.close();
@@ -51,8 +55,8 @@ function App() {
               <div className="search-bar-text">Enter a YouTube channel name</div>
               <div className="search-bar-elements">
                 <div className="search-bar-prefix-link">https://www.youtube.com/</div>
-                <input className="search-bar-input" ref={inputRef} type="text" placeholder="@NASA" />
-                <button className="submit-button" type="submit">Submit</button>
+                <input className="search-bar-input" ref={inputRef} type="text" placeholder={placeHolder} />
+                <Button text="Submit" loading={loading} />
               </div>
             </form>
           </div>
