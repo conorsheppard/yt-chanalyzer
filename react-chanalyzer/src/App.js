@@ -88,7 +88,9 @@ function initialiseGraph() {
     datasets: [
         {
             backgroundColor: ["rgba(28, 183, 226, 0.4)"],
+            hoverBackgroundColor: ["rgba(27, 149, 183, 0.5)"],
             borderColor: ["rgba(233, 160, 52, 0.4)"],
+            hoverBorderColor: ["rgba(200, 138, 45, 0.5)"],
             borderWidth: 2,
             label: "Number of uploads",
             data: [],

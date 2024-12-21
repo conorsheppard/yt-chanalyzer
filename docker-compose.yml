@@ -17,7 +17,7 @@ services:
     image: "conorsheppard/react-chanalyzer"
     container_name: react-chanalyzer
     ports:
-      - "3000:3000"
+      - "80:3000"
     links:
       - spring-boot-chanalyzer
     build:

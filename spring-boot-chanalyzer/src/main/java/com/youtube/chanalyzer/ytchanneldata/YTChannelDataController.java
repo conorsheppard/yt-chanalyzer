@@ -90,8 +90,7 @@ public class YTChannelDataController {
             Pattern pattern = Pattern.compile("( \\d{1,2},)");
             Matcher matcher = pattern.matcher(videoDate);
             matcher.find();
-            String currentMonthAndYear = videoDate.replace(matcher.group(0), ",");
-            currentMonthAndYear = currentMonthAndYear.replace("Premiered ", "");
+            String currentMonthAndYear = videoDate.replace(matcher.group(0), ",").replace("Premiered ", "");
             var currentMonthValue = monthsAndNumUploadsMap.get(currentMonthAndYear) == null ? 0 : monthsAndNumUploadsMap.get(currentMonthAndYear);
             monthsAndNumUploadsMap.put(currentMonthAndYear, currentMonthValue + 1);
         }
