@@ -31,7 +31,7 @@ react-chanalyzer/.vscode
 # Spring Boot App
 
 spring-boot-chanalyzer/HELP.md
-spring-boot-chanalyzer/target
+# spring-boot-chanalyzer/target
 spring-boot-chanalyzer/!.mvn/wrapper/maven-wrapper.jar
 spring-boot-chanalyzer/!**/src/main/**/target
 spring-boot-chanalyzer/!**/src/test/**/target

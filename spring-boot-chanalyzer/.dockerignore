@@ -4,6 +4,7 @@
 !src/
 !pom.xml
 !application-prod.properties
+!application.properties
 # Exclude the target directory and its contents
 target/
 
