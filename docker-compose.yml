@@ -1,6 +1,4 @@
-version: '3'
 services:
-
   spring-boot-chanalyzer:
     image: "conorsheppard/spring-boot-chanalyzer"
     container_name: spring-boot-chanalyzer

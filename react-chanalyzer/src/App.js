@@ -4,6 +4,7 @@ import Button from './Button';
 
 const scraperApi = process.env.REACT_APP_ANALYTICS_API;
 const ytBaseUrl = "https://www.youtube.com/";
+const maxVideos = 88;
 
 function App() {
   const [graphData, setGraphData] = useState([]);
@@ -37,7 +38,7 @@ function App() {
       setGraphData(graphDataInitialised);
       setInterval(eventData["currentInterval"]);
 
-      if (eventData["currentInterval"] === 64) {
+      if (eventData["currentInterval"] === maxVideos) {
           console.log("Closing SSE connection");
           eventSource.close();
           setProcessingComplete(true);

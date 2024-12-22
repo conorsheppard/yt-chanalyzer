@@ -25,7 +25,7 @@ public class YTChannelDataController {
     private Environment env;
     private final Logger logger = LoggerFactory.getLogger(YTChannelDataController.class);
     private final WebClient client = WebClient.create();
-    private final int[] videoQuantityIntervals = new int[]{1, 2, 4, 8, 16, 24, 32, 48, 64};
+    private final int[] videoQuantityIntervals = new int[]{1, 2, 4, 8, 16, 24, 32, 48, 64, 88};
 
     class ChannelAndNumVideos {
         String channelUrl;
