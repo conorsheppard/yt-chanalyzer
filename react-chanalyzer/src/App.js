@@ -1,39 +1,42 @@
-import {useState, useRef} from 'react';
+import { useState } from 'react';
 import { BarChart } from "./BarChart";
-import Button from './Button';
+import FormInput from './FormInput';
 
 const scraperApi = process.env.REACT_APP_ANALYTICS_API;
 const ytBaseUrl = "https://www.youtube.com/";
 const maxVideos = 88;
 
 function App() {
+  const [values, setValues] = useState({channelname: ""});
   const [graphData, setGraphData] = useState([]);
   const [interval, setInterval] = useState();
   const [processingComplete, setProcessingComplete] = useState(false);
-  const [placeHolder, setPlaceHolder] = useState("@NASA");
+  const [placeholder, setPlaceholder] = useState("@NASA");
   const [loading, setLoading] = useState(false);
-  const inputRef = useRef();
+  const inputs = [
+    {
+      id: 1,
+      name: "channelname",
+      type: "text",
+      errormessage: "Channel name should start with an '@' symbol and be a real YouTube channel with at least 1 video.",
+      pattern: "(?:^|[^w])(?:@)([A-Za-z0-9_](?:(?:[A-Za-z0-9_]|(?:.(?!.))){0,28}(?:[A-Za-z0-9_]))?)",
+      required: true,
+    }
+  ];
 
   function onSubmit(e) {
     e.preventDefault();
-    const value = inputRef.current.value;
-    if (value === "") {
-      console.log("returning ...")
-      return
-    }
-
-    setPlaceHolder(value);
+    setPlaceholder(values["channelname"]);
     setLoading(true);
     setProcessingComplete(false);
-    const eventSource = new EventSource(`${scraperApi}/channel?channelUrl=${ytBaseUrl}${value}`);
-    inputRef.current.value = "";
+    const eventSource = new EventSource(`${scraperApi}/channel?channelUrl=${ytBaseUrl}${values["channelname"]}`);
 
     eventSource.onmessage = event => {
       setLoading(false);
       const eventData = JSON.parse(event.data);
       let graphDataInitialised = initialiseGraph();
       graphDataInitialised["labels"] = eventData["labels"];
-      graphDataInitialised["channelName"] = value;
+      graphDataInitialised["channelName"] = values["channelname"];
       graphDataInitialised["datasets"][0]["data"] = eventData["datasets"];
       setGraphData(graphDataInitialised);
       setInterval(eventData["currentInterval"]);
@@ -48,19 +51,26 @@ function App() {
     return () => eventSource.close();
   };
 
+  const onChange = (e) => {
+    setValues({ ...values, [e.target.name]: e.target.value });
+  };
+
   return (
       <>
         <div className="search-bar-and-graph">
-          <div className="search-bar-form-and-text">
-            <form onSubmit={onSubmit}>
-              <div className="search-bar-text">Enter a YouTube channel name</div>
-              <div className="search-bar-elements">
-                <div className="search-bar-prefix-link">https://www.youtube.com/</div>
-                <input className="search-bar-input" ref={inputRef} type="text" placeholder={placeHolder} />
-                <Button text="Submit" loading={loading} />
-              </div>
-            </form>
-          </div>
+        {inputs.map((input) => (
+          <FormInput
+            key={input.id}
+            {...input}
+            value={values[input.name]}
+            onChange={onChange}
+            onSubmit={onSubmit}
+            loading={loading}
+            placeholder={placeholder}
+            onInvalid={e => e.target.setCustomValidity(input.errormessage)}
+            onInput={e => e.target.setCustomValidity('')}
+          />
+        ))}
           { !isEmpty(graphData) &&
             <div className="bar-chart">
               <h3>Videos Uploaded Per Month: <a href={ytBaseUrl + graphData["channelName"]} target="_blank" rel="noreferrer">{graphData["channelName"]}</a></h3>

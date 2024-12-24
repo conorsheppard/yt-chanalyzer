@@ -10,6 +10,15 @@
     url(fonts/JetBrainsMono-ExtraBoldItalic.ttf) format("truetype");
 }
 
+span {
+    display: inline-block;
+    font-size: x-small;
+
+    @media (min-width:801px)  {
+        font-size: small;
+    }
+}
+
 * {
     box-sizing: border-box;
 }
