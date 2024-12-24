@@ -74,7 +74,7 @@ function App() {
           { !isEmpty(graphData) &&
             <div className="bar-chart">
               <h3>Videos Uploaded Per Month: <a href={ytBaseUrl + graphData["channelName"]} target="_blank" rel="noreferrer">{graphData["channelName"]}</a></h3>
-              <div>{processingComplete === true && <span>Processing complete. </span>}{typeof(interval) === 'undefined' ? 0 : interval} videos processed{processingComplete === true ? <span>.</span> : <span> ...</span>}</div>
+              <div>{processingComplete === true && <span>Processing complete. </span>}{typeof(interval) === 'undefined' ? 0 : ' ' + interval} videos processed{processingComplete === true ? <span>.</span> : <span> ...</span>}</div>
               <BarChart data={graphData} />
             </div>
           }
