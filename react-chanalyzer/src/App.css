@@ -30,7 +30,7 @@ body {
     text-align: left;
     width: 100%;
     font-size: 0.7em;
-    padding-top: 8%;
+    padding-top: 0.1em;
 
     @media (min-width:801px)  {
         padding-top: 2%;
@@ -39,3 +39,54 @@ body {
         width: 55%;
     }
 }
+
+.processing-indicator {
+    margin-bottom: 1em;
+}
+
+.medium-text {
+    font-size: 1.2em;
+
+    @media (min-width:801px)  {
+        font-size: 1em;
+    }
+
+    span {
+        font-size: 1em;
+        margin-bottom: 0.2em;
+    }
+}
+
+.chart-title-and-toggle {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+
+    @media (min-width:801px)  {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+
+        a {
+            color: #1cb7e2;
+            text-decoration: none;
+        }
+    }
+}
+
+.toggle {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    margin-bottom: 10px;
+
+    span {
+        margin-right: 10px;
+    }
+}
+
+.toggle-bg-colour.react-toggle--checked .react-toggle-track {
+    background-color: rgba(168, 0, 73, 0.4);
+  }

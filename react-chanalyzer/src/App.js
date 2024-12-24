@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { BarChart } from "./BarChart";
 import FormInput from './FormInput';
+import Toggle from 'react-toggle';
+import "./Toggle.css";
 
 const scraperApi = process.env.REACT_APP_ANALYTICS_API;
 const ytBaseUrl = "https://www.youtube.com/";
@@ -8,6 +10,10 @@ const maxVideos = 88;
 
 function App() {
   const [values, setValues] = useState({channelname: ""});
+  const showAvgViewsGraph = useRef();
+  const channelLinkName = useRef();
+  const [avgViewsGraphData, setAvgViewsGraphData] = useState();
+  const [mainGraphData, setMainGraphData] = useState();
   const [graphData, setGraphData] = useState([]);
   const [interval, setInterval] = useState();
   const [processingComplete, setProcessingComplete] = useState(false);
@@ -26,26 +32,38 @@ function App() {
 
   function onSubmit(e) {
     e.preventDefault();
+    channelLinkName.current = values["channelname"]
     setPlaceholder(values["channelname"]);
     setLoading(true);
     setProcessingComplete(false);
-    let gData = initialiseGraph();
-    setGraphData(gData);
+    let mainGraphData = initMainGraph();
+    let avgViewsGraphData = initAvgViewsGraph();
+    setGraphData(showAvgViewsGraph.current ? avgViewsGraphData : mainGraphData);
+
     const eventSource = new EventSource(`${scraperApi}/channel?channelUrl=${ytBaseUrl}${values["channelname"]}`);
 
     eventSource.onmessage = event => {
       setLoading(false);
       const eventData = JSON.parse(event.data);
-      let gData = initialiseGraph();
-      gData["labels"] = eventData["labels"];
-      gData["channelName"] = values["channelname"];
-      gData["datasets"][0]["data"] = eventData["datasets"][0]["data"];
-      gData["datasets"][1]["data"] = eventData["datasets"][1]["data"];
-      setGraphData(gData);
+      let mainGraphData = initMainGraph();
+      let avgViewsGraphData = initAvgViewsGraph();
+      mainGraphData["labels"] = eventData["labels"];
+      avgViewsGraphData["labels"] = eventData["labels"];
+      mainGraphData["datasets"][0]["data"] = eventData["datasets"][0]["data"];
+      mainGraphData["datasets"][1]["data"] = eventData["datasets"][1]["data"];
+      avgViewsGraphData["datasets"][0]["data"] = eventData["datasets"][2]["data"];
+      setMainGraphData(mainGraphData);
+      setAvgViewsGraphData(avgViewsGraphData);
+
+      if (showAvgViewsGraph.current) {
+        setGraphData(avgViewsGraphData);
+      } else {
+        setGraphData(mainGraphData);
+      }
+
       setInterval(eventData["currentInterval"]);
 
       if (eventData["currentInterval"] === maxVideos) {
-          console.log("Closing SSE connection");
           eventSource.close();
           setProcessingComplete(true);
       }
@@ -58,8 +76,13 @@ function App() {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
+  const onToggle = (e) => {
+    showAvgViewsGraph.current = !showAvgViewsGraph.current;
+    setGraphData(showAvgViewsGraph.current ? avgViewsGraphData : mainGraphData);
+  };
+
   return (
-      <>
+      <> 
         <div className="search-bar-and-graph">
         {inputs.map((input) => (
           <FormInput
@@ -76,8 +99,13 @@ function App() {
         ))}
           { !isEmpty(graphData) &&
             <div className="bar-chart">
-              <h3>Videos Uploaded Per Month: <a href={ytBaseUrl + graphData["channelName"]} target="_blank" rel="noreferrer">{graphData["channelName"]}</a></h3>
-              <div>{processingComplete === true && <span>Processing complete. </span>}{typeof(interval) === 'undefined' ? 0 : ' ' + interval} videos processed{processingComplete === true ? <span>.</span> : <span> ...</span>}</div>
+              <div className='chart-title-and-toggle'>
+                <h3>Channel analytics: <a href={ytBaseUrl + values["channelname"]} target="_blank" rel="noreferrer">{channelLinkName.current}</a></h3>
+                <div className='toggle'>{showAvgViewsGraph.current ? <span className="medium-text">Show uploads/month & total views</span> : <span className="medium-text">Show average video views</span>}<Toggle className='toggle-button toggle-bg-colour' icons={false} defaultChecked={false} onChange={onToggle} /></div>
+              </div>
+              <div className="processing-indicator medium-text">
+                {processingComplete === true && <span>Processing complete. </span>}{typeof(interval) === 'undefined' ? 0 : ' ' + interval} videos processed{processingComplete === true ? <span>.</span> : <span>...</span>}
+              </div>
               <BarChart data={graphData} />
             </div>
           }
@@ -96,7 +124,7 @@ function isEmpty(obj) {
   return true;
 }
 
-function initialiseGraph() {
+function initMainGraph() {
   return {
     labels: [],
     datasets: [
@@ -123,9 +151,28 @@ function initialiseGraph() {
             hoverBorderWidth: 3,
             borderRadius: 3,
             hoverBorderRadius: 4,
-        },
-    ],
-    channelName: ""
+        }
+    ]
+  };
+}
+
+function initAvgViewsGraph() {
+  return {
+    labels: [],
+    datasets: [
+        {
+            backgroundColor: ["rgba(168, 0, 73, 0.4)"],
+            hoverBackgroundColor: ["rgba(126, 10, 60, 0.5)"],
+            borderColor: ["rgba(87, 255, 182, 0.4)"],
+            hoverBorderColor: ["rgba(68, 192, 138, 0.5)"],
+            borderWidth: 2,
+            label: "Average video views per month",
+            data: [],
+            hoverBorderWidth: 3,
+            borderRadius: 3,
+            hoverBorderRadius: 4,
+        }
+    ]
   };
 }
 
