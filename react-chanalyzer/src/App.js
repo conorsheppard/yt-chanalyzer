@@ -29,16 +29,19 @@ function App() {
     setPlaceholder(values["channelname"]);
     setLoading(true);
     setProcessingComplete(false);
+    let gData = initialiseGraph();
+    setGraphData(gData);
     const eventSource = new EventSource(`${scraperApi}/channel?channelUrl=${ytBaseUrl}${values["channelname"]}`);
 
     eventSource.onmessage = event => {
       setLoading(false);
       const eventData = JSON.parse(event.data);
-      let graphDataInitialised = initialiseGraph();
-      graphDataInitialised["labels"] = eventData["labels"];
-      graphDataInitialised["channelName"] = values["channelname"];
-      graphDataInitialised["datasets"][0]["data"] = eventData["datasets"];
-      setGraphData(graphDataInitialised);
+      let gData = initialiseGraph();
+      gData["labels"] = eventData["labels"];
+      gData["channelName"] = values["channelname"];
+      gData["datasets"][0]["data"] = eventData["datasets"][0]["data"];
+      gData["datasets"][1]["data"] = eventData["datasets"][1]["data"];
+      setGraphData(gData);
       setInterval(eventData["currentInterval"]);
 
       if (eventData["currentInterval"] === maxVideos) {
@@ -108,7 +111,19 @@ function initialiseGraph() {
             hoverBorderWidth: 3,
             borderRadius: 3,
             hoverBorderRadius: 4,
-        }
+        },
+        {
+            backgroundColor: ["rgba(28, 226, 48, 0.4)"],
+            hoverBackgroundColor: ["rgba(54, 199, 68, 0.5)"],
+            borderColor: ["rgba(226, 38, 28, 0.4)"],
+            hoverBorderColor: ["rgba(181, 54, 47, 0.5)"],
+            borderWidth: 2,
+            label: "Total views/month (millions)",
+            data: [],
+            hoverBorderWidth: 3,
+            borderRadius: 3,
+            hoverBorderRadius: 4,
+        },
     ],
     channelName: ""
   };

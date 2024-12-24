@@ -13,8 +13,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -78,31 +76,5 @@ public class YTChannelDataController {
                 .bodyToMono(ArrayList.class)
                 .map(YTChannelDataResponseDTO::new)
                 .map(yt -> yt.setCurrentInterval(channelAndNumVideos.getNumVideos()));
-    }
-
-    public static YTChannelDataResponseDTO sanitiseResponse(ArrayList<HashMap<String, String>> responseBody) {
-        YTChannelDataResponseDTO response = new YTChannelDataResponseDTO();
-        LinkedHashMap<String, Integer> monthsAndNumUploadsMap = new LinkedHashMap<>();
-        List<String> datasets = new ArrayList<>();
-
-        for (HashMap<String, String> res : responseBody) {
-            String videoDate = res.get("uploadDate");
-            Pattern pattern = Pattern.compile("( \\d{1,2},)");
-            Matcher matcher = pattern.matcher(videoDate);
-            matcher.find();
-            String currentMonthAndYear = videoDate.replace(matcher.group(0), ",").replace("Premiered ", "");
-            var currentMonthValue = monthsAndNumUploadsMap.get(currentMonthAndYear) == null ? 0 : monthsAndNumUploadsMap.get(currentMonthAndYear);
-            monthsAndNumUploadsMap.put(currentMonthAndYear, currentMonthValue + 1);
-        }
-        List<String> labels = new ArrayList<>(monthsAndNumUploadsMap.keySet());
-        response.setLabels(labels);
-
-        for (Map.Entry<String, Integer> entry : monthsAndNumUploadsMap.entrySet()) {
-            datasets.add(entry.getValue().toString());
-        }
-
-        response.setDatasets(datasets);
-
-        return response;
     }
 }

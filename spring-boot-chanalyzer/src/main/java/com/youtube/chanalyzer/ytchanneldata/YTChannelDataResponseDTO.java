@@ -3,16 +3,19 @@ package com.youtube.chanalyzer.ytchanneldata;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static com.youtube.chanalyzer.ytchanneldata.YTChannelResponseHandler.sortVideosIntoMonths;
 
 public class YTChannelDataResponseDTO {
     List<String> labels;
-    List<String> datasets;
+    List<Map<String, List<String>>> datasets;
     Integer currentInterval;
 
     public YTChannelDataResponseDTO() {}
 
-    public YTChannelDataResponseDTO(ArrayList<HashMap<String, String>> l) {
-        var res = YTChannelDataController.sanitiseResponse(l);
+    public YTChannelDataResponseDTO(ArrayList<HashMap<String, String>> responseObject) {
+        var res = sortVideosIntoMonths(responseObject);
         this.labels = res.labels;
         this.datasets = res.datasets;
     }
@@ -21,7 +24,7 @@ public class YTChannelDataResponseDTO {
         return this.labels;
     }
 
-    public List<String> getDatasets() {
+    public List<Map<String, List<String>>> getDatasets() {
         return this.datasets;
     }
 
@@ -33,7 +36,7 @@ public class YTChannelDataResponseDTO {
         this.labels = labels;
     }
 
-    public void setDatasets(List<String> datasets) {
+    public void setDatasets(List<Map<String, List<String>>> datasets) {
         this.datasets = datasets;
     }
 
