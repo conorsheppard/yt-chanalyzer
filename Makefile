@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-default: up
+default: up-local
 
 build:
 	mvn clean package
@@ -28,4 +28,4 @@ compose-build:
 
 dbu: down compose-build up
 
-.PHONY: default build docker-nuke up-local up down down-local compose-build-local compose-build dbu
+.PHONY: default build docker-nuke up-local up down-local down compose-build-local compose-build dbu

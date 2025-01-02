@@ -1,5 +1,7 @@
-# YouTube Chanalyzer
+# <img src="./react-chanalyzer/src/logos/youtube-chanalyzer-logo.png" width="23" alt="YouTube Chanalyzer logo"> YouTube Chanalyzer
 _**YouTube channel analytics tool**_
+
+https://youtube-chanalyzer.com
 
 ## Tech Stack
 - Java 23 (OpenJDK)
@@ -10,10 +12,21 @@ _**YouTube channel analytics tool**_
 - Kubernetes
 
 ## Architecture
-TODO 
+
 
 ## Demo
 TODO
 
 ## How To Run
-TODO
+
+### Docker Compose
+Execute the following command at the root of this project
+
+```shell
+make
+```
+
+To shut down
+```shell
+make down-local
+```
