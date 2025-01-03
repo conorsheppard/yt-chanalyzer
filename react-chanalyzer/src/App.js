@@ -99,9 +99,12 @@ function App() {
         ))}
           { !isEmpty(graphData) &&
             <div className="bar-chart">
-              <div className='chart-title-and-toggle'>
+              <div className="chart-title-and-toggle">
                 <h3>Channel analytics: <a href={ytBaseUrl + values["channelname"]} target="_blank" rel="noreferrer">{channelLinkName.current}</a></h3>
-                <div className='toggle'>{showAvgViewsGraph.current ? <span className="medium-text">Show uploads/month & total views</span> : <span className="medium-text">Show average video views</span>}<Toggle className='toggle-button toggle-bg-colour' icons={false} defaultChecked={false} onChange={onToggle} /></div>
+                <div className="toggle">
+                    <div className="toggle-text">{showAvgViewsGraph.current ? <span className="medium-text">Show uploads/month & total views</span> : <span className="medium-text">Show average video views</span>}</div>
+                    <Toggle className="toggle-button toggle-bg-colour" icons={false} defaultChecked={false} onChange={onToggle} />
+                </div>
               </div>
               <div className="processing-indicator medium-text">
                 {processingComplete === true && <span>Processing complete. </span>}{typeof(interval) === 'undefined' ? 0 : ' ' + interval} videos processed{processingComplete === true ? <span>.</span> : <span>...</span>}
