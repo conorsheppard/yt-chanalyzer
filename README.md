@@ -12,7 +12,8 @@ _**YouTube channel analytics tool**_
 - Kubernetes
 
 ## Architecture
-<img src="./YouTube%20Chanalyzer%20Diagram.png" width="1000" style="border-radius: 10px;" alt="YouTube Chanalyzer architecture diagram">
+
+<img src="./YouTube%20Chanalyzer%20Diagram.svg" width="1000" style="border-radius: 10px;" alt="YouTube Chanalyzer architecture diagram">
 
 ## How It Works
 
