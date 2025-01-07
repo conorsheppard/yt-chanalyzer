@@ -6,7 +6,7 @@ metadata:
 spec:
   clusterIP: 10.100.77.5
   ports:
-    - port: 5050
+    - port: 5000
       targetPort: 5050
       name: scraper-service-chanalyzer
   selector:

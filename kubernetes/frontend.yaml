@@ -37,10 +37,3 @@ spec:
           name: react-chanalyzer
           ports:
             - containerPort: 3000
-          resources:
-            limits:
-              cpu: 1000m
-              memory: 2000Mi
-            requests:
-              cpu: 800m
-              memory: 1500Mi
