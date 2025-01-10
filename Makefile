@@ -26,6 +26,9 @@ compose-build-local:
 compose-build:
 	docker-compose -f docker-compose.yml build --no-cache
 
+coverage-badge-gen:
+	python3 -m jacoco_badge_generator -j spring-boot-chanalyzer/target/jacoco-report/jacoco.csv
+
 dbu: down compose-build up
 
 .PHONY: default build docker-nuke up-local up down-local down compose-build-local compose-build dbu
