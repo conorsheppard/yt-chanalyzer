@@ -1,4 +1,6 @@
-package com.youtube.chanalyzer.ytchanneldata;
+package com.youtube.chanalyzer.service;
+
+import com.youtube.chanalyzer.dto.YTChannelDataResponseDTO;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -9,12 +11,8 @@ public class YTChannelResponseHandler {
         YTChannelDataResponseDTO response = new YTChannelDataResponseDTO();
         LinkedHashMap<String, Integer> monthsAndNumUploadsMap = new LinkedHashMap<>();
         LinkedHashMap<String, Double> monthsAndTotalViewsMap = new LinkedHashMap<>();
-        List<String> videoDatesList = new ArrayList<>();
-        Map<String, List<String>> videoDatesMap = new LinkedHashMap<>();
-        List<String> videoViewsList = new ArrayList<>();
-        Map<String, List<String>> videoViewsMap = new LinkedHashMap<>();
-        List<String> avgVideoViewsList = new ArrayList<>();
-        Map<String, List<String>> avgVideoViewsMap = new LinkedHashMap<>();
+        List<String> videoDatesList = new ArrayList<>(), videoViewsList = new ArrayList<>(), avgVideoViewsList = new ArrayList<>();
+        Map<String, List<String>> videoDatesMap = new LinkedHashMap<>(), videoViewsMap = new LinkedHashMap<>(), avgVideoViewsMap = new LinkedHashMap<>();
 
         for (HashMap<String, String> res : responseBody) {
             String videoDate = res.get("uploadDate");
