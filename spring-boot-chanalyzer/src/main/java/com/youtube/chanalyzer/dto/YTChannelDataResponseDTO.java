@@ -1,4 +1,4 @@
-package com.youtube.chanalyzer.ytchanneldata;
+package com.youtube.chanalyzer.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.youtube.chanalyzer.ytchanneldata.YTChannelResponseHandler.sortVideosIntoMonths;
+import static com.youtube.chanalyzer.service.YTChannelResponseHandler.sortVideosIntoMonths;
 
 @Data
 @NoArgsConstructor
