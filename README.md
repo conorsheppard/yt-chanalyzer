@@ -22,6 +22,17 @@ _**YouTube channel analytics tool**_
 - Docker
 - Kubernetes
 
+<table>
+<tr>
+<td>
+Spring Boot App Test Coverage
+</td>
+<td>
+<img src="./badges/jacoco.svg" style="display: flex;" alt="jacoco-test-coverage-badge">
+</td>
+</tr>
+</table>
+
 ## Architecture
 
 <img src="./YouTube%20Chanalyzer%20Diagram.svg" width="1000" style="border-radius: 10px;" alt="YouTube Chanalyzer architecture diagram">
