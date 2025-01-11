@@ -8,7 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.youtube.chanalyzer.service.YTChannelResponseHandler.sortVideosIntoMonths;
+import static com.youtube.chanalyzer.service.YTChannelDataService.sortVideosIntoMonths;
+
 
 @Data
 @NoArgsConstructor
