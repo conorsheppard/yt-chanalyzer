@@ -5,6 +5,10 @@ import scrapetube
 
 app = Flask(__name__)
 
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
 @app.route("/scrape", methods=['GET'])
 def scrape():
     channel_url = request.args.get('channelUrl')
