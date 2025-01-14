@@ -3,6 +3,17 @@ _**YouTube channel analytics tool**_
 
 <a href="https://youtube-chanalyzer.com" target="_blank" rel="noreferrer">youtube-chanalyzer.com</a>
 
+## Contents
+* [Tech Stack](#tech-stack)
+* [Architecture](#architecture)
+* [How It Works](#how-it-works)
+* [Challenges & Resolutions](#challenges--resolutions)
+* [How To Run](#how-to-run)
+  * [Docker Compose (recommended)](#docker-compose-recommended)
+  * [Minikube](#minikube)
+  * [Deploy to Kubernetes (Amazon EKS)](#deploy-to-kubernetes-amazon-eks)
+* [Future Updates & Improvements](#future-updates--improvements)
+
 ## Tech Stack
 - Java 23 (OpenJDK)
 - Spring Boot 3
