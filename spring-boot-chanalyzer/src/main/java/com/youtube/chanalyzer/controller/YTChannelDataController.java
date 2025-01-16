@@ -3,6 +3,7 @@ package com.youtube.chanalyzer.controller;
 import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
 import com.youtube.chanalyzer.service.YTChannelDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,15 +15,17 @@ import reactor.core.publisher.Flux;
 @RequestMapping("/api")
 public class YTChannelDataController {
     @Autowired
-    YTChannelDataService service;
+    private YTChannelDataService service;
+    @Value("${YT_BASE_URL}")
+    private String YT_BASE_URL;
 
     @GetMapping("/health")
     public ResponseEntity<Object> getHealthCheck() {
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    @GetMapping(path = "/v1/channel/{channelUrl}/videos", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ChartJSDataResponseDTO> getChannelVideos(@PathVariable String channelUrl) {
-        return service.getChannelVideoData(channelUrl);
+    @GetMapping(path = "/v1/channel/{channelName}/videos", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ChartJSDataResponseDTO> getChannelVideos(@PathVariable String channelName) {
+        return service.getChannelVideoData(YT_BASE_URL + channelName);
     }
 }

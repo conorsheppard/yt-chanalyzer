@@ -50,7 +50,7 @@ public class YTChannelDataServiceTest {
 //        var responseBody = new Scanner(new File(MOCK_RESPONSE_FILE)).nextLine();
 //        mockPythonWebScraper.enqueue(new MockResponse().setBody(responseBody)
 //                .addHeader("Content-Type", "application/json"));
-//        var channelUrl = "https://www.youtube.com/@NASA";
+//        var channelName = "@NASA";
 //        Flux<YTChannelDataResponseDTO> response = ytChannelDataService.initiateResponseStream(channelUrl);
 //
 //        StepVerifier.create(response)

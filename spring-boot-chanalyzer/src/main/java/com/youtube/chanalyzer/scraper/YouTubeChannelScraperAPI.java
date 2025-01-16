@@ -2,6 +2,7 @@ package com.youtube.chanalyzer.scraper;
 
 import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -12,13 +13,14 @@ import java.util.regex.Pattern;
 
 import static com.youtube.chanalyzer.ChanalyzerApplication.LOG;
 
+@Component
 @AllArgsConstructor
 public class YouTubeChannelScraperAPI implements ScraperAPI {
     private final WebClient webClient;
     private final List<Integer> numVidsToScrapeList = Arrays.asList(1, 2, 4, 8, 16, 24, 32, 48, 64, 88);
 
     public Flux<ChartJSDataResponseDTO> getChannelVideoData(String channelUrl) {
-        LOG.info("in initiateResponseStream: {}", channelUrl);
+        LOG.info("in getChannelVideoData: {}", channelUrl);
         var fluxFromIterable = Flux
                 .fromIterable(numVidsToScrapeList)
                 .flatMap(i -> getScrapeResponse(i, channelUrl));
