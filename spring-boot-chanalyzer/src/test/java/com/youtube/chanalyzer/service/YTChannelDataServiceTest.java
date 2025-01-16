@@ -14,6 +14,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 @ExtendWith(MockitoExtension.class)
 public class YTChannelDataServiceTest {
@@ -57,6 +59,11 @@ public class YTChannelDataServiceTest {
 //
 //        RecordedRequest recordedRequest = mockPythonWebScraper.takeRequest();
 //        assertEquals("GET", recordedRequest.getMethod());
+    }
+
+    @Test
+    public void testScraper() {
+
     }
 
 }
