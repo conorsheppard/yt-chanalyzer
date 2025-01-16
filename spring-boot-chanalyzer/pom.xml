@@ -13,19 +13,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>chanalyzer</name>
 	<description>Application that scrapes a YouTube channel's videos and returns the data to the frontend to be displayed on a graph</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+
 	<properties>
 		<java.version>23</java.version>
 	</properties>
@@ -150,5 +138,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
