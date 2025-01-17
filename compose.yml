@@ -5,7 +5,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SCRAPER_URL_LOCAL=http://127.0.0.1:5050/scrape
+      - SCRAPER_URL_LOCAL=http://scraper-service-chanalyzer:5050/scrape
       - SPRING.PROFILES.ACTIVE=default
     links:
       - scraper-service-chanalyzer

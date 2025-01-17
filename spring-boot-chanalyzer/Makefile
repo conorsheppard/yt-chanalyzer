@@ -2,6 +2,12 @@ SHELL := /bin/bash
 
 default: test
 
+install:
+	mvn clean install -U
+
+package:
+	mvn clean package
+
 test:
 	mvn test
 

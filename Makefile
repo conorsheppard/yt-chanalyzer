@@ -31,4 +31,5 @@ coverage-badge-gen:
 
 dbu: down compose-build up
 
+.SILENT:
 .PHONY: default build docker-nuke up-local up down-local down compose-build-local compose-build dbu

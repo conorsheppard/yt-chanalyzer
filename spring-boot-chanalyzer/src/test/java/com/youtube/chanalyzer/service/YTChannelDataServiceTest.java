@@ -1,6 +1,10 @@
 package com.youtube.chanalyzer.service;
 
+import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
+import com.youtube.chanalyzer.scraper.ScraperAPI;
+import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,9 +14,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -35,13 +43,26 @@ public class YTChannelDataServiceTest {
         mockPythonWebScraper.shutdown();
     }
 
-    @BeforeEach
-    void initialize() {
+    class TestScraper implements ScraperAPI {
         String baseUrl = String.format("http://localhost:%s", mockPythonWebScraper.getPort());
-        ytChannelDataService = new YTChannelDataService(WebClient.builder()
+        private WebClient wc = WebClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_EVENT_STREAM_VALUE)
-                .build());
+                .build();
+
+        public TestScraper() {
+
+        }
+
+        @Override
+        public Flux<?> getChannelVideoData(String url) {
+            return null;
+        }
+    }
+
+    @BeforeEach
+    void initialize() {
+        ytChannelDataService = new YTChannelDataService(new TestScraper());
     }
 
 
@@ -50,8 +71,8 @@ public class YTChannelDataServiceTest {
 //        var responseBody = new Scanner(new File(MOCK_RESPONSE_FILE)).nextLine();
 //        mockPythonWebScraper.enqueue(new MockResponse().setBody(responseBody)
 //                .addHeader("Content-Type", "application/json"));
-//        var channelName = "@NASA";
-//        Flux<YTChannelDataResponseDTO> response = ytChannelDataService.initiateResponseStream(channelUrl);
+//        var channelUrl = "https://www.youtube.com/@NASA";
+//        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(channelUrl);
 //
 //        StepVerifier.create(response)
 //                .expectNextMatches(elem -> elem.getLabels().contains("Dec"))
