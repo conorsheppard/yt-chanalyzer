@@ -16,6 +16,7 @@ public class YTChannelDataService {
         this.scraperAPI = scraperAPI;
     }
 
+    @SuppressWarnings("unchecked")
     public Flux<ChartJSDataResponseDTO> getChannelVideoData(String channelUrl) {
         return (Flux<ChartJSDataResponseDTO>) scraperAPI.getChannelVideoData(channelUrl);
     }
