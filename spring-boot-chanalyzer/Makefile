@@ -18,4 +18,4 @@ check-coverage:
 	open -a Google\ Chrome target/jacoco-report/index.html
 
 .SILENT:
-.PHONY: default install package test test-coverage check-coverage
+.PHONY: default install package test test-coverage check-coverage coverage-badge-gen

@@ -18,7 +18,7 @@ public class ChartJSDataResponseDTO {
     List<Map<String, List<String>>> datasets;
     Integer currentInterval;
 
-    public ChartJSDataResponseDTO(ArrayList<HashMap<String, String>> responseObject) {
+    public ChartJSDataResponseDTO(List<HashMap<String, String>> responseObject) {
         var res = sortVideosIntoMonths(responseObject);
         this.labels = res.labels;
         this.datasets = res.datasets;

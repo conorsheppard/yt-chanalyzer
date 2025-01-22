@@ -1,5 +1,7 @@
 package com.youtube.chanalyzer.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
 import com.youtube.chanalyzer.scraper.ScraperAPI;
 import lombok.SneakyThrows;
@@ -30,6 +32,9 @@ public class YTChannelDataServiceTest {
 
     public static MockWebServer mockPythonWebScraper;
     private YTChannelDataService ytChannelDataService;
+    private final String VIDEOS_2 = "2_VIDEOS";
+    private final String VIDEO_1 =  "1_VIDEO";
+    private final String EMPTY = "EMPTY";
 
     @BeforeAll
     static void setUp() throws IOException {
@@ -46,32 +51,20 @@ public class YTChannelDataServiceTest {
         @SneakyThrows
         @Override
         public Flux<?> getChannelVideoData(String responseFile) {
-        String MOCK_RESPONSE_FILE = getResponseFile(responseFile);
+            String MOCK_RESPONSE_FILE = getResponseFile(responseFile);
+            var responseBody = new Scanner(new File(MOCK_RESPONSE_FILE)).nextLine();
+            TypeReference<List<HashMap<String, String>>> jacksonTypeReference = new TypeReference<>(){};
+            List<HashMap<String, String>> jacksonList = new ObjectMapper().readValue(responseBody, jacksonTypeReference);
 
-        var responseBody = new Scanner(new File(MOCK_RESPONSE_FILE)).nextLine();
-        Flux flux = Flux.just(
-                new ChartJSDataResponseDTO(new ArrayList<>(
-                        List.of(new HashMap<>(Map.of(
-                                        "videoId", "PPQ29WRT-rU",
-                                        "title", "NASA 2025: To the Moon, Mars, and Beyond",
-                                        "uploadDate", "Dec 27, 2024",
-                                        "viewCount", "269,979 views")),
-                                new HashMap<>(Map.of(
-                                        "videoId", "PPQ29WRT-rU",
-                                        "title", "NASA 2025: To the Moon, Mars, and Beyond",
-                                        "uploadDate", "Dec 27, 2024",
-                                        "viewCount", "269,979 views"))
-                        ))));
-
-        return flux;
+            return Flux.just(new ChartJSDataResponseDTO(jacksonList));
         }
     }
 
     private String getResponseFile(String responseFile) {
         return switch (responseFile) {
-            case "EMPTY" -> "src/test/resources/service/mock-response-body-empty.txt";
-            case "1_VIDEO" -> "src/test/resources/service/mock-response-body-1-video.txt";
-            case "2_VIDEO" -> "src/test/resources/service/mock-response-body-2-videos.txt";
+            case EMPTY -> "src/test/resources/service/mock-response-body-empty.txt";
+            case VIDEO_1 -> "src/test/resources/service/mock-response-body-1-video.txt";
+            case VIDEOS_2 -> "src/test/resources/service/mock-response-body-2-videos.txt";
             default -> throw new IllegalStateException("Unexpected value: " + responseFile);
         };
     }
@@ -123,8 +116,7 @@ public class YTChannelDataServiceTest {
 
     @Test
     public void testScraper1VideoResponse() {
-        var responseFile = "1_VIDEO";
-        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(responseFile);
+        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(VIDEO_1);
 
         StepVerifier.create(response)
                 .expectNextMatches(elem -> elem.getLabels().getFirst().contains("Dec"))
@@ -134,19 +126,17 @@ public class YTChannelDataServiceTest {
 
     @Test
     public void testScraper2VideoResponse() {
-        var responseFile = "2_VIDEOS";
-        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(responseFile);
+        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(VIDEOS_2);
 
         StepVerifier.create(response)
-                .expectNextMatches(elem -> elem.getLabels().stream().filter(i -> i.contains("Dec")).toList().size() == 2)
+                .expectNextMatches(elem -> elem.getLabels().stream().toList().size() == 2)
                 .expectComplete()
                 .verify();
     }
 
     @Test
     public void testScraperEmptyResponse() {
-        var responseFile = "EMPTY";
-        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(responseFile);
+        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(EMPTY);
 
         StepVerifier.create(response)
                 .expectNextMatches(elem -> elem.getLabels().isEmpty())

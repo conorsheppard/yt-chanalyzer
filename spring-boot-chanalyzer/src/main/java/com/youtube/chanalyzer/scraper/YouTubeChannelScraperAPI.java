@@ -36,7 +36,7 @@ public class YouTubeChannelScraperAPI implements ScraperAPI {
                 .map(yt -> yt.setCurrentInterval(numVideos));
     }
 
-    public static ChartJSDataResponseDTO sortVideosIntoMonths(ArrayList<HashMap<String, String>> responseBody) {
+    public static ChartJSDataResponseDTO sortVideosIntoMonths(List<HashMap<String, String>> responseBody) {
         ChartJSDataResponseDTO response = new ChartJSDataResponseDTO();
         LinkedHashMap<String, Integer> monthsAndNumUploadsMap = new LinkedHashMap<>();
         LinkedHashMap<String, Double> monthsAndTotalViewsMap = new LinkedHashMap<>();
