@@ -30,22 +30,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(MockitoExtension.class)
 public class YTChannelDataServiceTest {
 
-    public static MockWebServer mockPythonWebScraper;
     private YTChannelDataService ytChannelDataService;
     private final String VIDEOS_2 = "2_VIDEOS";
     private final String VIDEO_1 =  "1_VIDEO";
     private final String EMPTY = "EMPTY";
-
-    @BeforeAll
-    static void setUp() throws IOException {
-        mockPythonWebScraper = new MockWebServer();
-        mockPythonWebScraper.start();
-    }
-
-    @AfterAll
-    static void tearDown() throws IOException {
-        mockPythonWebScraper.shutdown();
-    }
 
     class TestScraper implements ScraperAPI {
         @SneakyThrows
@@ -69,49 +57,9 @@ public class YTChannelDataServiceTest {
         };
     }
 
-    static class TestScraperMock implements ScraperAPI {
-        String baseUrl = String.format("http://localhost:%s", mockPythonWebScraper.getPort());
-        private final WebClient wc = WebClient.builder()
-                .baseUrl(baseUrl)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_EVENT_STREAM_VALUE)
-                .build();
-
-        @Override
-        public Flux<?> getChannelVideoData(String url) {
-            return Flux
-                    .fromIterable(List.of(1))
-                    .flatMap(i -> wc.get()
-                                .retrieve()
-                                .bodyToMono(ArrayList.class)
-                                .map(ChartJSDataResponseDTO::new)
-                                .map(yt -> yt.setCurrentInterval(i)));
-        }
-    }
-
     @BeforeEach
     void initialize() {
-
         ytChannelDataService = new YTChannelDataService(new TestScraper());
-    }
-
-
-    @SneakyThrows
-    @Test
-    public void testGetChannelVideos() {
-//        String MOCK_RESPONSE_FILE = "src/test/resources/service/mock-response-body.txt";
-//        var responseBody = new Scanner(new File(MOCK_RESPONSE_FILE)).nextLine();
-//        mockPythonWebScraper.enqueue(new MockResponse().setBody(responseBody)
-//                .addHeader("Content-Type", "application/json"));
-//        var channelUrl = "https://www.youtube.com/@NASA";
-//        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(channelUrl);
-//
-//        StepVerifier.create(response)
-//                .expectNextMatches(elem -> elem.getLabels().getFirst().contains("Dec"))
-//                .expectComplete()
-//                .verify();
-//
-//        RecordedRequest recordedRequest = mockPythonWebScraper.takeRequest();
-//        assertEquals("GET", recordedRequest.getMethod());
     }
 
     @Test

@@ -33,7 +33,7 @@ public class YTChannelDataControllerTest {
     }
 
     @Test
-    public void testHealthCheck2() {
+    public void testHealthCheck() {
         var response = new YTChannelDataController().getHealthCheck();
         assertEquals(response.getStatusCode(), HttpStatusCode.valueOf(200));
         assertEquals(response.getHeaders().getContentType(), MediaType.APPLICATION_JSON);

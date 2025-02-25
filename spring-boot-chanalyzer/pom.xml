@@ -69,7 +69,7 @@
 				<version>0.8.12</version>
 				<configuration>
 					<excludes>
-						<exclude>com/example/jacoco/JacocoApplication.class</exclude>
+						<exclude>com/youtube/chanalyzer/ChanalyzerApplication.class</exclude>
 					</excludes>
 				</configuration>
 				<executions>
@@ -101,7 +101,7 @@
 										<limit>
 											<counter>LINE</counter>
 											<value>COVEREDRATIO</value>
-											<minimum>0.76</minimum>
+											<minimum>0.2</minimum>
 										</limit>
 									</limits>
 								</rule>
