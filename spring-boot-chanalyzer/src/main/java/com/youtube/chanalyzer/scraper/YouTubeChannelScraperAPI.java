@@ -2,6 +2,7 @@ package com.youtube.chanalyzer.scraper;
 
 import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -13,6 +14,7 @@ import java.util.regex.Pattern;
 
 @Component
 @AllArgsConstructor
+@Slf4j
 public class YouTubeChannelScraperAPI implements ScraperAPI {
     private final WebClient webClient;
     private final List<Integer> numVidsToScrapeList = Arrays.asList(1, 2, 4, 8, 16, 24, 32, 48, 64, 88);
@@ -48,7 +50,8 @@ public class YouTubeChannelScraperAPI implements ScraperAPI {
             double viewCount = Double.parseDouble(res.get("viewCount").replaceAll(",", "").replace(" views", ""));
             Pattern pattern = Pattern.compile("( \\d{1,2},)");
             Matcher matcher = pattern.matcher(videoDate);
-            matcher.find();
+            var match = matcher.find();
+            if (!match) log.error("Failed to parse date: {}", videoDate);
             String currentMonthAndYear = videoDate.replace(matcher.group(0), ",").replace("Premiered ", "");
             var currentMonthValue = monthsAndNumUploadsMap.get(currentMonthAndYear) == null ? 0 : monthsAndNumUploadsMap.get(currentMonthAndYear);
             var currentTotalViews = monthsAndTotalViewsMap.get(currentMonthAndYear) == null ? 0 : monthsAndTotalViewsMap.get(currentMonthAndYear);
