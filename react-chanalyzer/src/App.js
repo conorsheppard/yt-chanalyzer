@@ -40,7 +40,7 @@ function App() {
     let avgViewsGraphData = initAvgViewsGraph();
     setGraphData(showAvgViewsGraph.current ? avgViewsGraphData : mainGraphData);
 
-    const eventSource = new EventSource(`${scraperApi}/channel?channelUrl=${ytBaseUrl}${values["channelname"]}`);
+    const eventSource = new EventSource(`${scraperApi}/v1/channel/${values["channelname"]}/videos`);
 
     eventSource.onmessage = event => {
       setLoading(false);

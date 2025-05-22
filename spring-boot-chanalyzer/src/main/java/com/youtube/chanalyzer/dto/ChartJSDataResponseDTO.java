@@ -1,29 +1,33 @@
-package com.youtube.chanalyzer.ytchanneldata;
+package com.youtube.chanalyzer.dto;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.youtube.chanalyzer.ytchanneldata.YTChannelResponseHandler.sortVideosIntoMonths;
+import static com.youtube.chanalyzer.scraper.YouTubeChannelScraperAPI.sortVideosIntoMonths;
+
 
 @Data
 @NoArgsConstructor
-public class YTChannelDataResponseDTO {
+@Accessors(chain = true)
+public class ChartJSDataResponseDTO {
     List<String> labels;
     List<Map<String, List<String>>> datasets;
     Integer currentInterval;
 
-    public YTChannelDataResponseDTO(ArrayList<HashMap<String, String>> responseObject) {
+    public ChartJSDataResponseDTO(List<HashMap<String, String>> responseObject) {
         var res = sortVideosIntoMonths(responseObject);
         this.labels = res.labels;
         this.datasets = res.datasets;
     }
 
-    public YTChannelDataResponseDTO setCurrentInterval(Integer currentInterval) {
+    public ChartJSDataResponseDTO setCurrentInterval(Integer currentInterval) {
         this.currentInterval = currentInterval;
         return this;
     }

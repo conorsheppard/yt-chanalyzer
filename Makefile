@@ -3,12 +3,12 @@ SHELL := /bin/bash
 default: up-local
 
 build:
-	mvn clean package
+	mvn clean package -f spring-boot-chanalyzer/pom.xml
 
 docker-nuke:
 	docker ps -aq | tail -n+2 | grep . && docker stop $(docker ps -aq) || docker container prune -f && docker image prune -af && docker system prune -af && docker volume prune -f
 
-up-local:
+up-local: build
 	docker-compose -f compose.yml up
 
 up:
@@ -26,6 +26,10 @@ compose-build-local:
 compose-build:
 	docker-compose -f docker-compose.yml build --no-cache
 
+coverage-badge-gen:
+	python3 -m jacoco_badge_generator -j spring-boot-chanalyzer/target/jacoco-report/jacoco.csv
+
 dbu: down compose-build up
 
+.SILENT:
 .PHONY: default build docker-nuke up-local up down-local down compose-build-local compose-build dbu

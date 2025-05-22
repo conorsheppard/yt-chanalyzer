@@ -1,27 +1,57 @@
-package com.youtube.chanalyzer.ytchanneldata;
+package com.youtube.chanalyzer.scraper;
+
+import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class YTChannelResponseHandler {
-    public static YTChannelDataResponseDTO sortVideosIntoMonths(ArrayList<HashMap<String, String>> responseBody) {
-        YTChannelDataResponseDTO response = new YTChannelDataResponseDTO();
+@Component
+@AllArgsConstructor
+@Slf4j
+public class YouTubeChannelScraperAPI implements ScraperAPI {
+    private final WebClient webClient;
+    private final List<Integer> numVidsToScrapeList = Arrays.asList(1, 2, 4, 8, 16, 24, 32, 48, 64, 88);
+
+    public Flux<ChartJSDataResponseDTO> getChannelVideoData(String channelUrl) {
+        var fluxFromIterable = Flux
+                .fromIterable(numVidsToScrapeList)
+                .flatMap(i -> getScrapeResponse(i, channelUrl));
+
+        fluxFromIterable.subscribe();
+
+        return fluxFromIterable;
+    }
+
+    private Mono<ChartJSDataResponseDTO> getScrapeResponse(Integer numVideos, String channelUrl) {
+        return webClient.get()
+                .uri("?channelUrl=" + channelUrl + "&numVideos=" + numVideos)
+                .retrieve()
+                .bodyToMono(ArrayList.class)
+                .map(ChartJSDataResponseDTO::new)
+                .map(yt -> yt.setCurrentInterval(numVideos));
+    }
+
+    public static ChartJSDataResponseDTO sortVideosIntoMonths(List<HashMap<String, String>> responseBody) {
+        ChartJSDataResponseDTO response = new ChartJSDataResponseDTO();
         LinkedHashMap<String, Integer> monthsAndNumUploadsMap = new LinkedHashMap<>();
         LinkedHashMap<String, Double> monthsAndTotalViewsMap = new LinkedHashMap<>();
-        List<String> videoDatesList = new ArrayList<>();
-        Map<String, List<String>> videoDatesMap = new LinkedHashMap<>();
-        List<String> videoViewsList = new ArrayList<>();
-        Map<String, List<String>> videoViewsMap = new LinkedHashMap<>();
-        List<String> avgVideoViewsList = new ArrayList<>();
-        Map<String, List<String>> avgVideoViewsMap = new LinkedHashMap<>();
+        List<String> videoDatesList = new ArrayList<>(), videoViewsList = new ArrayList<>(), avgVideoViewsList = new ArrayList<>();
+        Map<String, List<String>> videoDatesMap = new LinkedHashMap<>(), videoViewsMap = new LinkedHashMap<>(), avgVideoViewsMap = new LinkedHashMap<>();
 
         for (HashMap<String, String> res : responseBody) {
             String videoDate = res.get("uploadDate");
             double viewCount = Double.parseDouble(res.get("viewCount").replaceAll(",", "").replace(" views", ""));
             Pattern pattern = Pattern.compile("( \\d{1,2},)");
             Matcher matcher = pattern.matcher(videoDate);
-            matcher.find();
+            var match = matcher.find();
+            if (!match) log.error("Failed to parse date: {}", videoDate);
             String currentMonthAndYear = videoDate.replace(matcher.group(0), ",").replace("Premiered ", "");
             var currentMonthValue = monthsAndNumUploadsMap.get(currentMonthAndYear) == null ? 0 : monthsAndNumUploadsMap.get(currentMonthAndYear);
             var currentTotalViews = monthsAndTotalViewsMap.get(currentMonthAndYear) == null ? 0 : monthsAndTotalViewsMap.get(currentMonthAndYear);
@@ -55,4 +85,5 @@ public class YTChannelResponseHandler {
 
         return response;
     }
+
 }
