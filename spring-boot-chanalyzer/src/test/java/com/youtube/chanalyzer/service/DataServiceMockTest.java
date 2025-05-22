@@ -66,7 +66,7 @@ public class DataServiceMockTest {
 
     @SneakyThrows
     @Test
-    public void testGetChannelVideos() {
+    void testGetChannelVideos() {
         String MOCK_RESPONSE_FILE = "src/test/resources/service/mock-response-body-1-video.txt";
         var responseBody = new Scanner(new File(MOCK_RESPONSE_FILE)).nextLine();
         mockPythonWebScraper.enqueue(new MockResponse().setBody(responseBody)

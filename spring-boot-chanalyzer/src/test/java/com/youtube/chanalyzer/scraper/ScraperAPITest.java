@@ -1,5 +1,6 @@
 package com.youtube.chanalyzer.scraper;
 
+import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,13 +12,15 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ClaudeAITest {
+public class ScraperAPITest {
 
     @InjectMocks
     private YouTubeChannelScraperAPI channelService;
@@ -61,7 +64,19 @@ public class ClaudeAITest {
                     // Add assertions for second response
                     return dto.getCurrentInterval() != null;
                 })
+                .expectNext(getChartResponseForTest(4))
+                .expectNext(getChartResponseForTest(8))
+                .expectNext(getChartResponseForTest(16))
+                .expectNext(getChartResponseForTest(24))
+                .expectNext(getChartResponseForTest(32))
+                .expectNext(getChartResponseForTest(48))
+                .expectNext(getChartResponseForTest(64))
+                .expectNext(getChartResponseForTest(88))
                 .verifyComplete();
+    }
+
+    private ChartJSDataResponseDTO getChartResponseForTest(int interval) {
+        return new ChartJSDataResponseDTO().setLabels(List.of()).setDatasets(List.of(Map.of("data", List.of()), Map.of("data", List.of()), Map.of("data", List.of()))).setCurrentInterval(interval);
     }
 
     @Test

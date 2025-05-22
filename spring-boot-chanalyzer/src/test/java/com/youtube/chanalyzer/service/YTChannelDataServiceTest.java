@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 @ExtendWith(MockitoExtension.class)
-public class YTChannelDataServiceTest {
+class YTChannelDataServiceTest {
 
     private YTChannelDataService ytChannelDataService;
     private final String VIDEOS_2 = "2_VIDEOS";

@@ -1,7 +1,9 @@
 package com.youtube.chanalyzer.dto;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +15,7 @@ import static com.youtube.chanalyzer.scraper.YouTubeChannelScraperAPI.sortVideos
 
 @Data
 @NoArgsConstructor
+@Accessors(chain = true)
 public class ChartJSDataResponseDTO {
     List<String> labels;
     List<Map<String, List<String>>> datasets;
