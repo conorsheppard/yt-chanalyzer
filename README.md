@@ -28,7 +28,7 @@ _**YouTube channel analytics tool**_
 Spring Boot App Test Coverage
 </td>
 <td>
-<img src="./badges/jacoco.svg" style="display: flex;" alt="jacoco-test-coverage-badge">
+<img src="./spring-boot-chanalyzer/badges/jacoco.svg" style="display: flex;" alt="jacoco-test-coverage-badge">
 </td>
 </tr>
 </table>
