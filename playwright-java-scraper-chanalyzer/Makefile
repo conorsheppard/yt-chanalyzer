@@ -24,4 +24,4 @@ mvn-run:
 	mvn spring-boot:run
 
 .SILENT:
-.PHONY: default run
+.PHONY: default wrapper compile test mvn-build build run mvn-run
