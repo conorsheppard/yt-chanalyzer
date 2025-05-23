@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 @RestController
-@RequestMapping("/api/scrape")
+@RequestMapping("/api")
 public class ScrapeController {
 
     private final ScrapeService scrapeService;
@@ -18,7 +18,7 @@ public class ScrapeController {
         this.scrapeService = scrapeService;
     }
 
-    @GetMapping("/youtube-channel")
+    @GetMapping("/v1/channels")
     public Flux<YouTubeVideo> scrapeYouTubeChannel(
             @RequestParam String channelName,
             @RequestParam(defaultValue = "100") int limit) {
