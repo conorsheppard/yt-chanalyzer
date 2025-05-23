@@ -18,7 +18,12 @@ build: test
 	docker build --no-cache . -t conorsheppard/playwright-java-scraper-chanalyzer
 
 run:
-	docker run -p 5050:5050 conorsheppard/playwright-java-scraper-chanalyzer
+	docker run --rm -p 5050:5050 conorsheppard/playwright-java-scraper-chanalyzer
+
+debug:
+	docker run --rm -p 5005:5005 \
+      -e JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" \
+      conorsheppard/playwright-java-scraper-chanalyzer
 
 mvn-run:
 	mvn spring-boot:run

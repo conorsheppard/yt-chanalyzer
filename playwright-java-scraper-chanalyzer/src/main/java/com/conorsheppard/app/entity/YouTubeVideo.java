@@ -8,5 +8,6 @@ import lombok.Data;
 public class YouTubeVideo {
     private String title;
     private String url;
+    private String views;
     private String publishedTime;
 }

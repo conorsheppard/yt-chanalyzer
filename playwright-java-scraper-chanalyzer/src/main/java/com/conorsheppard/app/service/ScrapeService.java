@@ -27,9 +27,10 @@ public class ScrapeService {
                     ElementHandle video = videos.get(i);
                     String title = video.querySelector("#video-title").innerText();
                     String href = video.querySelector("#video-title").getAttribute("href");
+                    String views = video.querySelector("#video-views").getAttribute("href");
                     String publishedTime = video.querySelector("#metadata-line span").innerText();
 
-                    sink.next(new YouTubeVideo(title, "https://www.youtube.com" + href, publishedTime));
+                    sink.next(new YouTubeVideo(title, "https://www.youtube.com" + href, views, publishedTime));
                 }
 
                 sink.complete();
