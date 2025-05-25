@@ -5,6 +5,9 @@ default: run
 clean:
 	mvn clean
 
+docker-clean:
+	docker image prune -f && docker rmi $(docker images | grep playwright-java-scraper-chanalyzer | awk '{print $3}') -f
+
 wrapper:
 	mvn wrapper:wrapper
 
@@ -18,7 +21,7 @@ mvn-build:
 	mvn package -DskipTests
 
 build: test
-	docker build --no-cache . -t conorsheppard/playwright-java-scraper-chanalyzer
+	docker build -f Dockerfile.local --no-cache . -t conorsheppard/playwright-java-scraper-chanalyzer
 
 run:
 	docker run --rm --name playwright-java-scraper-chanalyzer -p 5050:5050 conorsheppard/playwright-java-scraper-chanalyzer
@@ -43,4 +46,4 @@ coverage-badge-gen:
 test-suite: test-coverage check-coverage coverage-badge-gen
 
 .SILENT:
-.PHONY: default clean wrapper compile test mvn-build build run debug mvn-run test-coverage check-coverage coverage-badge-gen test-suite
+.PHONY: default clean docker-clean wrapper compile test mvn-build build run debug mvn-run test-coverage check-coverage coverage-badge-gen test-suite
