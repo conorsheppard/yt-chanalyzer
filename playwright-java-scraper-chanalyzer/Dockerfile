@@ -10,5 +10,5 @@ WORKDIR /app
 ARG JAVA_OPTS=""
 COPY --from=builder /app/target/playwright-java-scraper-chanalyzer-1.0-SNAPSHOT.jar playwright-java-scraper-chanalyzer.jar
 EXPOSE 5050
-#ENTRYPOINT ["java", "${JAVA_OPTS}", "-jar", "playwright-java-scraper-chanalyzer.jar"]
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar playwright-java-scraper-chanalyzer.jar"]
+EXPOSE 5005
+ENTRYPOINT ["java", "${JAVA_OPTS}", "-jar", "playwright-java-scraper-chanalyzer.jar"]
