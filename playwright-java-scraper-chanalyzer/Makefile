@@ -2,6 +2,9 @@ SHELL := /bin/bash
 
 default: run
 
+clean:
+	mvn clean
+
 wrapper:
 	mvn wrapper:wrapper
 
@@ -18,10 +21,10 @@ build: test
 	docker build --no-cache . -t conorsheppard/playwright-java-scraper-chanalyzer
 
 run:
-	docker run --rm -p 5050:5050 conorsheppard/playwright-java-scraper-chanalyzer
+	docker run --rm --name playwright-java-scraper-chanalyzer -p 5050:5050 conorsheppard/playwright-java-scraper-chanalyzer
 
 debug:
-	docker run --rm -p 5005:5005 \
+	docker run --rm --name playwright-java-scraper-chanalyzer -p 5050:5050 -p 5005:5005 \
       -e JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" \
       conorsheppard/playwright-java-scraper-chanalyzer
 
@@ -40,4 +43,4 @@ coverage-badge-gen:
 test-suite: test-coverage check-coverage coverage-badge-gen
 
 .SILENT:
-.PHONY: default wrapper compile test mvn-build build run mvn-run test-coverage check-coverage coverage-badge-gen test-suite
+.PHONY: default clean wrapper compile test mvn-build build run debug mvn-run test-coverage check-coverage coverage-badge-gen test-suite

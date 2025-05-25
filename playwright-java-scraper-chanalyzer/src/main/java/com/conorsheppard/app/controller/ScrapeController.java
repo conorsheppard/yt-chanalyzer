@@ -20,8 +20,8 @@ public class ScrapeController {
 
     @GetMapping("/v1/channels")
     public Flux<YouTubeVideo> scrapeYouTubeChannel(
-            @RequestParam String channelName,
+            @RequestParam String channel,
             @RequestParam(defaultValue = "100") int limit) {
-        return scrapeService.scrapeChannel(channelName, limit);
+        return scrapeService.scrapeChannel(channel, limit);
     }
 }
