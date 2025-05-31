@@ -1,10 +1,13 @@
 package com.youtube.chanalyzer.scraper;
 
 import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
+import com.youtube.chanalyzer.dto.YouTubeVideoDTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -17,25 +20,41 @@ import java.util.regex.Pattern;
 @Slf4j
 public class YouTubeChannelScraperAPI implements ScraperAPI {
     private final WebClient webClient;
-    private final List<Integer> numVidsToScrapeList = Arrays.asList(1, 2, 4, 8, 16, 24, 32, 48, 64, 88);
+    private final List<Integer> numVidsToScrapeList = Arrays.asList(100);
 
-    public Flux<ChartJSDataResponseDTO> getChannelVideoData(String channelUrl) {
-        var fluxFromIterable = Flux
-                .fromIterable(numVidsToScrapeList)
-                .flatMap(i -> getScrapeResponse(i, channelUrl));
-
-        fluxFromIterable.subscribe();
-
-        return fluxFromIterable;
+    public Flux<YouTubeVideoDTO> getChannelVideoData(String channelName, int numVideos) {
+        return getScrapeResponse(channelName, numVideos);
     }
 
-    private Mono<ChartJSDataResponseDTO> getScrapeResponse(Integer numVideos, String channelUrl) {
-        return webClient.get()
-                .uri("?channelUrl=" + channelUrl + "&numVideos=" + numVideos)
+//    private Mono<ChartJSDataResponseDTO> getScrapeResponseOld(Integer numVideos, String channelUrl) {
+//        return webClient.get()
+//                .uri("?channelUrl=" + channelUrl + "&numVideos=" + numVideos)
+//                .retrieve()
+//                .bodyToMono(ArrayList.class)
+//                .map(ChartJSDataResponseDTO::new)
+//                .map(yt -> yt.setCurrentInterval(numVideos));
+//    }
+
+    private Flux<YouTubeVideoDTO> getScrapeResponse(String channelName, int numVideos) {
+        WebClient wc = WebClient.create();
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder
+                .fromHttpUrl("http://localhost:5050/api/v1/channels")
+                .queryParam("channel", channelName)
+                .queryParam("numVideos", numVideos);
+
+        String uri = uriBuilder.build(true).toUriString();
+
+        return wc.get()
+                .uri(uri)
+                .accept(MediaType.valueOf(MediaType.TEXT_EVENT_STREAM_VALUE))
                 .retrieve()
-                .bodyToMono(ArrayList.class)
-                .map(ChartJSDataResponseDTO::new)
-                .map(yt -> yt.setCurrentInterval(numVideos));
+                .bodyToFlux(YouTubeVideoDTO.class)
+                .log()
+                .share();
+//                .bodyToMono(ArrayList.class)
+//                .map(ChartJSDataResponseDTO::new)
+//                .map(yt -> yt.setCurrentInterval(numVideos));
     }
 
     public static ChartJSDataResponseDTO sortVideosIntoMonths(List<HashMap<String, String>> responseBody) {
@@ -85,5 +104,4 @@ public class YouTubeChannelScraperAPI implements ScraperAPI {
 
         return response;
     }
-
 }
