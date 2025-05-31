@@ -22,20 +22,11 @@ public class YouTubeChannelScraperAPI implements ScraperAPI {
     private final WebClient webClient;
     private final List<Integer> numVidsToScrapeList = Arrays.asList(100);
 
-    public Flux<YouTubeVideoDTO> getChannelVideoData(String channelName, int numVideos) {
+    public Flux<ChartJSDataResponseDTO> getChannelVideoData(String channelName, int numVideos) {
         return getScrapeResponse(channelName, numVideos);
     }
 
-//    private Mono<ChartJSDataResponseDTO> getScrapeResponseOld(Integer numVideos, String channelUrl) {
-//        return webClient.get()
-//                .uri("?channelUrl=" + channelUrl + "&numVideos=" + numVideos)
-//                .retrieve()
-//                .bodyToMono(ArrayList.class)
-//                .map(ChartJSDataResponseDTO::new)
-//                .map(yt -> yt.setCurrentInterval(numVideos));
-//    }
-
-    private Flux<YouTubeVideoDTO> getScrapeResponse(String channelName, int numVideos) {
+    private Flux<ChartJSDataResponseDTO> getScrapeResponse(String channelName, int numVideos) {
         WebClient wc = WebClient.create();
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder
@@ -50,11 +41,9 @@ public class YouTubeChannelScraperAPI implements ScraperAPI {
                 .accept(MediaType.valueOf(MediaType.TEXT_EVENT_STREAM_VALUE))
                 .retrieve()
                 .bodyToFlux(YouTubeVideoDTO.class)
-                .log()
+                .map(yt -> List.of(new HashMap<>(Map.of("uploadDate", yt.getPublishedTime(), "viewCount", yt.getViews()))))
+                .map(ChartJSDataResponseDTO::new)
                 .share();
-//                .bodyToMono(ArrayList.class)
-//                .map(ChartJSDataResponseDTO::new)
-//                .map(yt -> yt.setCurrentInterval(numVideos));
     }
 
     public static ChartJSDataResponseDTO sortVideosIntoMonths(List<HashMap<String, String>> responseBody) {
@@ -66,7 +55,7 @@ public class YouTubeChannelScraperAPI implements ScraperAPI {
 
         for (HashMap<String, String> res : responseBody) {
             String videoDate = res.get("uploadDate");
-            double viewCount = Double.parseDouble(res.get("viewCount").replaceAll(",", "").replace(" views", ""));
+            double viewCount = Double.parseDouble(res.get("viewCount").replaceAll(",", "").replace(" views", "").replace("K", "000").replace("M", "000000"));
             Pattern pattern = Pattern.compile("( \\d{1,2},)");
             Matcher matcher = pattern.matcher(videoDate);
             var match = matcher.find();
@@ -94,7 +83,7 @@ public class YouTubeChannelScraperAPI implements ScraperAPI {
         for (Map.Entry<String, Double> entry : monthsAndTotalViewsMap.entrySet()) {
             var month = entry.getKey();
             var views = entry.getValue();
-            var avgViews = views/monthsAndNumUploadsMap.get(month);
+            var avgViews = views / monthsAndNumUploadsMap.get(month);
             avgVideoViewsList.add(String.valueOf(avgViews));
         }
         avgVideoViewsMap.put("data", avgVideoViewsList);

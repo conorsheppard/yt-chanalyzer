@@ -34,7 +34,6 @@ public class ScrapeService {
     @SneakyThrows
     public Flux<YouTubeVideo> scrapeChannel(String channelName, int maxVideos) {
         return Flux.create((FluxSink<YouTubeVideo> sink) -> {
-
             Playwright playwright = Playwright.create();
             Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(IS_HEADLESS));
             File cookiesFile = handleCookies();
@@ -61,17 +60,14 @@ public class ScrapeService {
                     sink.complete();
                     log.info("Extracted {} video URLs", videoLinks.size());
                 }
-                log.info("saving cookies …");
                 saveCookies(context);
-                log.info("cookies saved …");
             }
-            log.info("closing browser …");
             browser.close();
-            log.info("browser closed …");
         })
         .doOnSubscribe(_ -> log.info("Subscriber connected"))
-        .share()
-        .doAfterTerminate(() -> log.info("exiting scrapeChannel")); // replays results to new subscribers
+        .log()
+        .share() // replays results to new subscribers
+        .doAfterTerminate(() -> log.info("exiting scrapeChannel"));
     }
 
     private static Set<String> getVideos(Page page, FluxSink<YouTubeVideo> sink, int maxVideos) {
@@ -91,7 +87,6 @@ public class ScrapeService {
             int count = videoElements.size();
 
             for (int i = videosLoadedCheckpoint; i < count; i++) {
-                log.info("i: {}", i);
                 var video = videoElements.get(i);
                 var vidInfoInnerText = "";
                 try {
@@ -106,12 +101,11 @@ public class ScrapeService {
                 if (href != null && href.contains("watch")) {
                     var videoUrl = "https://www.youtube.com" + href.substring(0, 20);
                     if (videoLinks.add(videoUrl)) {
-                        log.info("added video: {}", videoUrl);
                         sink.next(new YouTubeVideo()
                                 .setTitle(videoMetadata.title)
                                 .setUrl(videoUrl)
                                 .setViews(videoMetadata.views)
-                                .setPublishedTime(videoMetadata.rawDateText));
+                                .setPublishedTime(videoMetadata.publishedDate.toString()));
                     }
                     if (videoLinks.size() == maxVideos) {
                         continueScraping = false;

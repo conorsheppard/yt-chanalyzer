@@ -1,7 +1,6 @@
 package com.youtube.chanalyzer.service;
 
 import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
-import com.youtube.chanalyzer.dto.YouTubeVideoDTO;
 import com.youtube.chanalyzer.scraper.ScraperAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,7 @@ public class YTChannelDataService {
     }
 
     @SuppressWarnings("unchecked")
-    public Flux<YouTubeVideoDTO> getChannelVideoData(String channelName, int numVideos) {
-        return (Flux<YouTubeVideoDTO>) scraperAPI.getChannelVideoData(channelName, numVideos);
+    public Flux<ChartJSDataResponseDTO> getChannelVideoData(String channelName, int numVideos) {
+        return (Flux<ChartJSDataResponseDTO>) scraperAPI.getChannelVideoData(channelName, numVideos);
     }
 }
