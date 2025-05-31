@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: chanalyzer
+
+SCRAPER_API: http://scraper-service-chanalyzer:5050/scrape
+YT_BASE_URL: https://www.youtube.com/
+
+logging:
+  level:
+    org.springframework.web.reactive.function.client.ExchangeFunctions: TRACE

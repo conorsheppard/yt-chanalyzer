@@ -1,4 +1,4 @@
-package com.conorsheppard.app.entity;
+package com.youtube.chanalyzer.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
-public class YouTubeVideo {
+public class YouTubeVideoDTO {
     private String title;
     private String url;
     private String views;

@@ -2,6 +2,8 @@ SHELL := /bin/bash
 
 default: run
 
+LATEST_VIDEO=$(shell find videos/ -type f -name "*.webm" -exec stat -f "%m %N" {} + | sort -nr | head -1 | awk '{print $$2}')
+
 clean:
 	mvn clean
 
@@ -44,6 +46,32 @@ coverage-badge-gen:
 	python3 -m jacoco_badge_generator -j target/jacoco-report/jacoco.csv
 
 test-suite: test-coverage check-coverage coverage-badge-gen
+
+video-details:
+	ls -lh videos/
+
+playwright-codegen:
+	# make interactive-scrape site=wikipedia.org
+	npx playwright codegen $(site) --target=java
+
+interactive-scrape: playwright-codegen
+
+latest-video:
+	@echo $(LATEST_VIDEO)
+
+open-video:
+	if [ -n "$(LATEST_VIDEO)" ]; then \
+		echo "Opening video: $(LATEST_VIDEO)"; \
+		open -a "Google Chrome" "$(LATEST_VIDEO)"; \
+	else \
+		echo "No video found."; \
+	fi
+
+clear-videos:
+	rm -rf videos && mkdir -p videos
+
+clear-cookies:
+	rm cookies.json
 
 .SILENT:
 .PHONY: default clean docker-clean wrapper compile test mvn-build build run debug mvn-run test-coverage check-coverage coverage-badge-gen test-suite
