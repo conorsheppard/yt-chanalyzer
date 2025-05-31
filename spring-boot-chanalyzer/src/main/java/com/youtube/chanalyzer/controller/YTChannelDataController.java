@@ -29,7 +29,7 @@ public class YTChannelDataController {
     }
 
     @GetMapping(path = "/v1/channels/{channelName}/videos", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<YouTubeVideoDTO> getChannelVideos(@PathVariable String channelName) {
+    public Flux<ChartJSDataResponseDTO> getChannelVideos(@PathVariable String channelName) {
         return service.getChannelVideoData(channelName, 100);
     }
 }
