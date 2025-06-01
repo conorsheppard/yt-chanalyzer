@@ -8,15 +8,14 @@ import reactor.core.publisher.Flux;
 
 @Service
 public class YTChannelDataService {
-    private final ScraperAPI scraperAPI;
+    private final ScraperAPI<ChartJSDataResponseDTO> scraperAPI;
 
     @Autowired
-    public YTChannelDataService(ScraperAPI scraperAPI) {
+    public YTChannelDataService(ScraperAPI<ChartJSDataResponseDTO> scraperAPI) {
         this.scraperAPI = scraperAPI;
     }
 
-    @SuppressWarnings("unchecked")
     public Flux<ChartJSDataResponseDTO> getChannelVideoData(String channelName, int numVideos) {
-        return (Flux<ChartJSDataResponseDTO>) scraperAPI.getChannelVideoData(channelName, numVideos);
+        return scraperAPI.getChannelVideoData(channelName, numVideos);
     }
 }

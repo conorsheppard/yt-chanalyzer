@@ -9,16 +9,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Component
 @AllArgsConstructor
 @Slf4j
-public class YouTubeChannelScraperAPI implements ScraperAPI {
+@Component
+public class YouTubeChannelScraperAPI implements ScraperAPI<ChartJSDataResponseDTO> {
     private final WebClient webClient;
     private final List<Integer> numVidsToScrapeList = Arrays.asList(100);
 
@@ -55,6 +56,7 @@ public class YouTubeChannelScraperAPI implements ScraperAPI {
 
         for (HashMap<String, String> res : responseBody) {
             String videoDate = res.get("uploadDate");
+            videoDate = convertDateFormat(videoDate);
             double viewCount = Double.parseDouble(res.get("viewCount").replaceAll(",", "").replace(" views", "").replace("K", "000").replace("M", "000000"));
             Pattern pattern = Pattern.compile("( \\d{1,2},)");
             Matcher matcher = pattern.matcher(videoDate);
@@ -92,5 +94,12 @@ public class YouTubeChannelScraperAPI implements ScraperAPI {
         response.setDatasets(datasets);
 
         return response;
+    }
+
+    private static String convertDateFormat(String inputDate) {
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+        LocalDate date = LocalDate.parse(inputDate, inputFormatter);
+        return date.format(outputFormatter);
     }
 }
