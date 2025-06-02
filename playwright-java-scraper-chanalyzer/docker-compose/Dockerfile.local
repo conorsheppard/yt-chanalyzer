@@ -1,5 +1,4 @@
-## Build stage with full JDK
-FROM eclipse-temurin:23-jdk-alpine
+FROM mcr.microsoft.com/playwright/java:v1.51.0-noble
 WORKDIR /app
 ARG JAVA_OPTS=""
 ARG JAR_FILE=target/playwright-java-scraper-chanalyzer-1.0-SNAPSHOT.jar

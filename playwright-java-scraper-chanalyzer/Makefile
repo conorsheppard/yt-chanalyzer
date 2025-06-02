@@ -23,7 +23,7 @@ mvn-build:
 	mvn package -DskipTests
 
 build: test
-	docker build -f Dockerfile.local --no-cache . -t conorsheppard/playwright-java-scraper-chanalyzer
+	docker build -f docker-compose/Dockerfile.local --no-cache . -t conorsheppard/playwright-java-scraper-chanalyzer
 
 run:
 	docker run --rm --name playwright-java-scraper-chanalyzer -p 5050:5050 conorsheppard/playwright-java-scraper-chanalyzer
@@ -31,6 +31,8 @@ run:
 debug:
 	docker run --rm --name playwright-java-scraper-chanalyzer -p 5050:5050 -p 5005:5005 \
       -e JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" \
+      -e PLAYWRIGHT_CODEGEN_TARGET=java \
+      -e PWDEBUG=1 \
       conorsheppard/playwright-java-scraper-chanalyzer
 
 mvn-run:

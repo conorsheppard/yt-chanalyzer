@@ -1,7 +1,7 @@
 ## Build stage with full JDK
 FROM eclipse-temurin:23-jdk-alpine AS builder
 WORKDIR /app
-COPY . .
+COPY .. .
 RUN ./mvnw clean package -q -DskipTests
 
 # Runtime stage with only JRE

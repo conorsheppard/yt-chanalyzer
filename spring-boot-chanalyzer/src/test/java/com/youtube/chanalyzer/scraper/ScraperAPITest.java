@@ -52,7 +52,7 @@ public class ScraperAPITest {
         setupWebClientMock(responseData1, responseData2);
 
         // When
-        var result = channelService.getChannelVideoData(channelUrl);
+        var result = channelService.getChannelVideoData(channelUrl, 100);
 
         // Then
         StepVerifier.create(result)
@@ -90,7 +90,7 @@ public class ScraperAPITest {
                 .thenReturn(Mono.error(new RuntimeException("WebClient error")));
 
         // When
-        var result = channelService.getChannelVideoData(channelUrl);
+        var result = channelService.getChannelVideoData(channelUrl, 100);
 
         // Then
         StepVerifier.create(result)

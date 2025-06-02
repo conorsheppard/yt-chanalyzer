@@ -35,10 +35,10 @@ class YTChannelDataServiceTest {
     private final String VIDEO_1 =  "1_VIDEO";
     private final String EMPTY = "EMPTY";
 
-    class TestScraper implements ScraperAPI {
+    class TestScraper implements ScraperAPI<ChartJSDataResponseDTO> {
         @SneakyThrows
         @Override
-        public Flux<?> getChannelVideoData(String responseFile) {
+        public Flux<ChartJSDataResponseDTO> getChannelVideoData(String responseFile, int numVideos) {
             String MOCK_RESPONSE_FILE = getResponseFile(responseFile);
             var responseBody = new Scanner(new File(MOCK_RESPONSE_FILE)).nextLine();
             TypeReference<List<HashMap<String, String>>> jacksonTypeReference = new TypeReference<>(){};
@@ -64,7 +64,7 @@ class YTChannelDataServiceTest {
 
     @Test
     public void testScraper1VideoResponse() {
-        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(VIDEO_1);
+        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(VIDEO_1, 100);
 
         StepVerifier.create(response)
                 .expectNextMatches(elem -> elem.getLabels().getFirst().contains("Dec"))
@@ -74,7 +74,7 @@ class YTChannelDataServiceTest {
 
     @Test
     public void testScraper2VideoResponse() {
-        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(VIDEOS_2);
+        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(VIDEOS_2, 100);
 
         StepVerifier.create(response)
                 .expectNextMatches(elem -> elem.getLabels().stream().toList().size() == 2)
@@ -84,7 +84,7 @@ class YTChannelDataServiceTest {
 
     @Test
     public void testScraperEmptyResponse() {
-        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(EMPTY);
+        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(EMPTY, 100);
 
         StepVerifier.create(response)
                 .expectNextMatches(elem -> elem.getLabels().isEmpty())

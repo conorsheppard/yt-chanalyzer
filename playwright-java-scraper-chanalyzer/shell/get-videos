@@ -11,7 +11,5 @@ URL="http://localhost:5050/api/v1/channels?channel=${CHANNEL}"
 
 # Send GET request
 echo "Sending request to: $URL"
-RESPONSE=$(curl -s -w "\nHTTP STATUS: %{http_code}\n" "$URL")
 
-# Print the response
-echo "$RESPONSE"
+curl -s -w "\nHTTP STATUS: %{http_code}\n" -H "Accept: text/event-stream" "$URL"

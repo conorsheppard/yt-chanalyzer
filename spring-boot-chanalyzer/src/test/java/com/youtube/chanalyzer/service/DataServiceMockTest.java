@@ -45,7 +45,7 @@ public class DataServiceMockTest {
         mockPythonWebScraper.shutdown();
     }
 
-    static class TestScraperMock implements ScraperAPI {
+    static class TestScraperMock implements ScraperAPI<ChartJSDataResponseDTO> {
         String baseUrl = String.format("http://localhost:%s", mockPythonWebScraper.getPort());
         private final WebClient wc = WebClient.builder()
                 .baseUrl(baseUrl)
@@ -53,7 +53,7 @@ public class DataServiceMockTest {
                 .build();
 
         @Override
-        public Flux<?> getChannelVideoData(String url) {
+        public Flux<ChartJSDataResponseDTO> getChannelVideoData(String url, int numVideos) {
             return Flux
                     .fromIterable(List.of(1))
                     .flatMap(i -> wc.get()
@@ -72,7 +72,7 @@ public class DataServiceMockTest {
         mockPythonWebScraper.enqueue(new MockResponse().setBody(responseBody)
                 .addHeader("Content-Type", "application/json"));
         var channelUrl = "https://www.youtube.com/@NASA";
-        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(channelUrl);
+        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(channelUrl, 100);
 
         StepVerifier.create(response)
                 .expectNextMatches(elem -> elem.getLabels().getFirst().contains("Dec"))
