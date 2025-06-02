@@ -5,10 +5,10 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SCRAPER_URL_LOCAL=http://scraper-service-chanalyzer:5050/scrape
+      - SCRAPER_URL_LOCAL=http://playwright-java-scraper-chanalyzer:5050/api/v1/channels
       - SPRING.PROFILES.ACTIVE=default
     links:
-      - scraper-service-chanalyzer
+      - playwright-java-scraper-chanalyzer
     build:
       context: ./spring-boot-chanalyzer
       dockerfile: docker-compose/Dockerfile-local
@@ -22,11 +22,11 @@ services:
     build:
       context: ./react-chanalyzer
       dockerfile: docker-compose/Dockerfile-local
-  scraper-service-chanalyzer:
-    image: "conorsheppard/scraper-service-chanalyzer"
-    container_name: scraper-service-chanalyzer
+  playwright-java-scraper-chanalyzer:
+    image: "conorsheppard/playwright-java-scraper-chanalyzer"
+    container_name: playwright-java-scraper-chanalyzer
     ports:
       - "5050:5050"
     build:
-      context: ./flask-scraper-service
-      dockerfile: docker-compose/Dockerfile
+      context: ./playwright-java-scraper-chanalyzer
+      dockerfile: docker-compose/Dockerfile.local

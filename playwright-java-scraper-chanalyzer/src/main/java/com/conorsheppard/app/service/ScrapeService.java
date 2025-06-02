@@ -40,8 +40,9 @@ public class ScrapeService {
             try (BrowserContext context = browser.newContext(new Browser.NewContextOptions()
                     .setStorageStatePath(Path.of(COOKIES_FILE))
                     .setExtraHTTPHeaders(Map.of("User-Agent", USER_AGENT, "Accept-Language", "en-US,en;q=0.9"))
-                    .setRecordVideoDir(Paths.get("videos/youtube/"))
-                    .setRecordVideoSize(1280, 720))) {
+//                    .setRecordVideoDir(Paths.get("videos/youtube/"))
+//                    .setRecordVideoSize(1280, 720)
+            )) {
 
                 ensureCookiesFileExists();
 
@@ -64,7 +65,7 @@ public class ScrapeService {
             }
             browser.close();
         })
-        .doOnSubscribe(_ -> log.info("Subscriber connected"))
+        .doOnSubscribe(sub -> log.info("Subscriber connected"))
         .log()
         .share() // replays results to new subscribers
         .doAfterTerminate(() -> log.info("exiting scrapeChannel"));
