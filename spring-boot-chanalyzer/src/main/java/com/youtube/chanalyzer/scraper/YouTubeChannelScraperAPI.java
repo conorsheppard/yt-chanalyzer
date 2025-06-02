@@ -1,41 +1,40 @@
 package com.youtube.chanalyzer.scraper;
 
 import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
+import com.youtube.chanalyzer.dto.YouTubeVideoDTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Component
 @AllArgsConstructor
 @Slf4j
-public class YouTubeChannelScraperAPI implements ScraperAPI {
+@Component
+public class YouTubeChannelScraperAPI implements ScraperAPI<ChartJSDataResponseDTO> {
     private final WebClient webClient;
-    private final List<Integer> numVidsToScrapeList = Arrays.asList(1, 2, 4, 8, 16, 24, 32, 48, 64, 88);
 
-    public Flux<ChartJSDataResponseDTO> getChannelVideoData(String channelUrl) {
-        var fluxFromIterable = Flux
-                .fromIterable(numVidsToScrapeList)
-                .flatMap(i -> getScrapeResponse(i, channelUrl));
-
-        fluxFromIterable.subscribe();
-
-        return fluxFromIterable;
+    public Flux<ChartJSDataResponseDTO> getChannelVideoData(String channelName, int numVideos) {
+        return getScrapeResponse(channelName, numVideos);
     }
 
-    private Mono<ChartJSDataResponseDTO> getScrapeResponse(Integer numVideos, String channelUrl) {
+    private Flux<ChartJSDataResponseDTO> getScrapeResponse(String channelName, int numVideos) {
         return webClient.get()
-                .uri("?channelUrl=" + channelUrl + "&numVideos=" + numVideos)
+                .uri("?channel=" + channelName + "&numVideos=" + numVideos)
+                .accept(MediaType.valueOf(MediaType.TEXT_EVENT_STREAM_VALUE))
                 .retrieve()
-                .bodyToMono(ArrayList.class)
+                .bodyToFlux(YouTubeVideoDTO.class)
+                .map(yt -> List.of(new HashMap<>(Map.of("uploadDate", yt.getPublishedTime(), "viewCount", yt.getViews()))))
                 .map(ChartJSDataResponseDTO::new)
-                .map(yt -> yt.setCurrentInterval(numVideos));
+                .share();
     }
 
     public static ChartJSDataResponseDTO sortVideosIntoMonths(List<HashMap<String, String>> responseBody) {
@@ -47,7 +46,8 @@ public class YouTubeChannelScraperAPI implements ScraperAPI {
 
         for (HashMap<String, String> res : responseBody) {
             String videoDate = res.get("uploadDate");
-            double viewCount = Double.parseDouble(res.get("viewCount").replaceAll(",", "").replace(" views", ""));
+            videoDate = convertDateFormat(videoDate);
+            double viewCount = Double.parseDouble(res.get("viewCount").replaceAll(",", "").replace(" views", "").replace("K", "000").replace("M", "000000"));
             Pattern pattern = Pattern.compile("( \\d{1,2},)");
             Matcher matcher = pattern.matcher(videoDate);
             var match = matcher.find();
@@ -75,7 +75,7 @@ public class YouTubeChannelScraperAPI implements ScraperAPI {
         for (Map.Entry<String, Double> entry : monthsAndTotalViewsMap.entrySet()) {
             var month = entry.getKey();
             var views = entry.getValue();
-            var avgViews = views/monthsAndNumUploadsMap.get(month);
+            var avgViews = views / monthsAndNumUploadsMap.get(month);
             avgVideoViewsList.add(String.valueOf(avgViews));
         }
         avgVideoViewsMap.put("data", avgVideoViewsList);
@@ -86,4 +86,10 @@ public class YouTubeChannelScraperAPI implements ScraperAPI {
         return response;
     }
 
+    private static String convertDateFormat(String inputDate) {
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+        LocalDate date = LocalDate.parse(inputDate, inputFormatter);
+        return date.format(outputFormatter);
+    }
 }

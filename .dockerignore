@@ -64,11 +64,6 @@ spring-boot-chanalyzer/!**/src/test/**/build
 ### VS Code ###
 spring-boot-chanalyzer/.vscode
 
-# Flask App
-
-flask-scraper-service/.idea
-**/__pycache__
-
 # flyctl launch added from .idea/.gitignore
 # Default ignored files
 .idea/shelf

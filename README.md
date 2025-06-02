@@ -17,7 +17,7 @@ _**YouTube channel analytics tool**_
 ## Tech Stack
 - Java 23 (OpenJDK)
 - Spring Boot 3
-- Python 3
+- Playwright for Java
 - React 18
 - Docker
 - Kubernetes
@@ -39,7 +39,7 @@ Spring Boot App Test Coverage
 
 ## How It Works
 
-The user is presented with a search bar where they can submit a YouTube channel name (e.g. `@NASA`). On submit, the React application validates the user's input and sends a GET request to the Spring Boot middleware application which acts as a bridge between the client and the Python web scraper. 
+The user is presented with a search bar where they can submit a YouTube channel name (e.g. `@NASA`). On submit, the React application validates the user's input and sends a GET request to the Spring Boot middleware application which acts as a bridge between the client and the Playwright web scraper. 
 
 The Spring Boot middleware system uses a reactive programming model to make requests to the Python web scraper (more specifically it does this using Java's WebClient, Flux and Mono APIs and parallelizes all the requests it has to make).
 

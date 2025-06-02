@@ -1,0 +1,15 @@
+#!/bin/zsh
+
+# Check if a channel name was provided
+if [ -z "$1" ]; then
+  echo "Usage: $0 <channel-name>"
+  exit 1
+fi
+
+CHANNEL="$1"
+URL="http://localhost:5050/api/v1/channels?channel=${CHANNEL}"
+
+# Send GET request
+echo "Sending request to: $URL"
+
+curl -s -w "\nHTTP STATUS: %{http_code}\n" -H "Accept: text/event-stream" "$URL"

@@ -11,6 +11,9 @@ package:
 test:
 	mvn test
 
+build:
+	docker build -f docker-compose/Dockerfile.local --no-cache . -t conorsheppard/spring-boot-chanalyzer
+
 test-coverage:
 	mvn clean org.jacoco:jacoco-maven-plugin:0.8.12:prepare-agent verify org.jacoco:jacoco-maven-plugin:0.8.12:report
 
