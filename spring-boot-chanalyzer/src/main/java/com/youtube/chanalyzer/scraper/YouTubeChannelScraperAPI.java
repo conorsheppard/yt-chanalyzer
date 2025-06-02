@@ -21,24 +21,14 @@ import java.util.regex.Pattern;
 @Component
 public class YouTubeChannelScraperAPI implements ScraperAPI<ChartJSDataResponseDTO> {
     private final WebClient webClient;
-    private final List<Integer> numVidsToScrapeList = Arrays.asList(100);
 
     public Flux<ChartJSDataResponseDTO> getChannelVideoData(String channelName, int numVideos) {
         return getScrapeResponse(channelName, numVideos);
     }
 
     private Flux<ChartJSDataResponseDTO> getScrapeResponse(String channelName, int numVideos) {
-        WebClient wc = WebClient.create();
-
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder
-                .fromHttpUrl("http://localhost:5050/api/v1/channels")
-                .queryParam("channel", channelName)
-                .queryParam("numVideos", numVideos);
-
-        String uri = uriBuilder.build(true).toUriString();
-
-        return wc.get()
-                .uri(uri)
+        return webClient.get()
+                .uri("?channel=" + channelName + "&numVideos=" + numVideos)
                 .accept(MediaType.valueOf(MediaType.TEXT_EVENT_STREAM_VALUE))
                 .retrieve()
                 .bodyToFlux(YouTubeVideoDTO.class)
