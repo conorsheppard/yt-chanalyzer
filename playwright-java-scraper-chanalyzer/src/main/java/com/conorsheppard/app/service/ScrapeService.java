@@ -1,16 +1,27 @@
 package com.conorsheppard.app.service;
 
 import com.conorsheppard.app.entity.YouTubeVideo;
+import com.conorsheppard.app.web.WebClient;
+import com.conorsheppard.app.web.JSoupWebClient;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.WaitForSelectorState;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -23,6 +34,8 @@ import static com.conorsheppard.app.utils.CookieUtils.*;
 @Slf4j
 @Service
 public class ScrapeService {
+    private final WebClient webClient = new JSoupWebClient();
+    private final String channelURL = "https://youtube.com/${CHANNEL}/videos";
     private static final String COOKIES_FILE = "cookies.json";
     private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36";
     private static final String NUM_VIDS_LOCATOR = "#page-header span[class][dir=\"auto\"][style]:has-text('video')";
@@ -30,48 +43,110 @@ public class ScrapeService {
     private static final String HREF_LOCATOR = "a#thumbnail"; // <a> tag with id="thumbnail"
     private static final String VIDEOS_LOCATOR = "ytd-rich-item-renderer";
     private static final boolean IS_HEADLESS = true;
+    HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
 
     @SneakyThrows
     public Flux<YouTubeVideo> scrapeChannel(String channelName, int maxVideos) {
-        return Flux.create((FluxSink<YouTubeVideo> sink) -> {
-            Playwright playwright = Playwright.create();
-            Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(IS_HEADLESS));
-            File cookiesFile = handleCookies();
-            try (BrowserContext context = browser.newContext(new Browser.NewContextOptions()
-                    .setStorageStatePath(Path.of(COOKIES_FILE))
-                    .setExtraHTTPHeaders(Map.of("User-Agent", USER_AGENT, "Accept-Language", "en-US,en;q=0.9"))
-//                    .setRecordVideoDir(Paths.get("videos/youtube/"))
-//                    .setRecordVideoSize(1280, 720)
-            )) {
-
-                ensureCookiesFileExists();
-
-                if (cookiesFile.exists() && cookiesFile.length() > 0) {
-                    context.addCookies(loadCookies());
-                    log.info("Loaded cookies from file.");
-                }
-
-                try (Page page = context.newPage()) {
-                    var channelURL = "https://youtube.com/${CHANNEL}/videos";
-                    var channel = channelURL.replace("${CHANNEL}", channelName);
-                    page.navigate(channel);
-                    Locator acceptButton = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Accept all"));
-                    if (acceptButton.isVisible()) acceptButton.click();
-                    var videoLinks = getVideos(page, sink, maxVideos);
-                    sink.complete();
-                    log.info("Extracted {} video URLs", videoLinks.size());
-                }
-                saveCookies(context);
-            }
-            browser.close();
-        })
-        .doOnSubscribe(sub -> log.info("Subscriber connected"))
-        .log()
-        .share() // replays results to new subscribers
-        .doAfterTerminate(() -> log.info("exiting scrapeChannel"));
+        Set<String> videoLinks = new HashSet<>();
+        return Flux.merge(
+                initialScrape(channelName, videoLinks),
+                scrapeWithPlaywright(channelName, 500, videoLinks)
+        ).distinct(YouTubeVideo::getUrl);
     }
 
-    private static Set<String> getVideos(Page page, FluxSink<YouTubeVideo> sink, int maxVideos) {
+    @SneakyThrows
+    private Flux<YouTubeVideo> initialScrape(String channelName, Set<String> videoLinks) {
+        var channel = channelURL.replace("${CHANNEL}", channelName);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(channel))
+                .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36")
+                .header("Accept-Language", "en-US,en;q=0.9")
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        Document doc = Jsoup.parse(response.body());
+        Elements links = doc.select(VIDEOS_LOCATOR);
+        String scriptContent = doc.select("script").stream()
+                .map(Element::html)
+                .filter(js -> js.contains("ytInitialData"))
+                .findFirst()
+                .orElseThrow();
+
+        String jsonString = scriptContent.substring(scriptContent.indexOf('{'), scriptContent.lastIndexOf('}') + 1);
+
+        Pattern pattern = Pattern.compile(
+                "\"videoId\":\"([^\"]{11})\".*?" +
+                        "\"title\":\\{\"runs\":\\[\\{\"text\":\"(.*?)\"\\}\\]\\}.*?" +
+                        "\"viewCountText\":\\{\"simpleText\":\"(.*?)\"\\}.*?" +
+                        "\"publishedTimeText\":\\{\"simpleText\":\"(.*?)\"\\}",
+                Pattern.DOTALL
+        );
+        Matcher matcher = pattern.matcher(jsonString);
+
+
+        return Flux.create((FluxSink<YouTubeVideo> sink) -> {
+
+            while (matcher.find()) {
+                String videoId = matcher.group(1);
+                String title = matcher.group(2);
+                String views = matcher.group(3);
+                String published = matcher.group(4);
+                var videoUrl = "https://www.youtube.com/?watch=" + videoId;
+                if (videoLinks.add(videoUrl)) {
+                    sink.next(new YouTubeVideo()
+                            .setTitle(title)
+                            .setUrl(videoUrl)
+                            .setViews(views)
+                            .setPublishedTime(published));
+                }
+            }
+        })
+        .doOnSubscribe(sub -> log.info("Subscriber connected to initial scrape Flux"))
+        .log()
+        .share()
+        .doAfterTerminate(() -> log.info("exiting initialScrape"));
+    }
+
+    private Flux<YouTubeVideo> scrapeWithPlaywright(String channelName, int maxVideos, Set<String> videoLinks) {
+        return Flux.create((FluxSink<YouTubeVideo> sink) -> {
+                    Playwright playwright = Playwright.create();
+                    Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(IS_HEADLESS));
+                    File cookiesFile = handleCookies();
+                    try (BrowserContext context = browser.newContext(new Browser.NewContextOptions()
+                                    .setStorageStatePath(Path.of(COOKIES_FILE))
+                                    .setExtraHTTPHeaders(Map.of("User-Agent", USER_AGENT, "Accept-Language", "en-US,en;q=0.9"))
+//                    .setRecordVideoDir(Paths.get("videos/youtube/"))
+//                    .setRecordVideoSize(1280, 720)
+                    )) {
+
+                        ensureCookiesFileExists();
+
+                        if (cookiesFile.exists() && cookiesFile.length() > 0) {
+                            context.addCookies(loadCookies());
+                            log.info("Loaded cookies from file.");
+                        }
+
+                        try (Page page = context.newPage()) {
+                            var channel = channelURL.replace("${CHANNEL}", channelName);
+                            page.navigate(channel);
+                            Locator acceptButton = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Accept all"));
+                            if (acceptButton.isVisible()) acceptButton.click();
+                            getVideos(page, sink, maxVideos, videoLinks);
+                            sink.complete();
+                            log.info("Extracted {} video URLs", videoLinks.size());
+                        }
+                        saveCookies(context);
+                    }
+                    browser.close();
+                })
+                .doOnSubscribe(sub -> log.info("Subscriber connected"))
+                .log()
+                .share() // replays results to new subscribers
+                .doAfterTerminate(() -> log.info("exiting scrapeChannel"));
+    }
+
+    private static Set<String> getVideos(Page page, FluxSink<YouTubeVideo> sink, int maxVideos, Set<String> videoLinks) {
         var totalVideosText = page.locator(NUM_VIDS_LOCATOR).textContent();
         Pattern pattern = Pattern.compile(MAX_VIDS_REGEX);
         Matcher matcher = pattern.matcher(totalVideosText);
@@ -79,7 +154,6 @@ public class ScrapeService {
         if (matcher.find()) totalVideosBelow1k = Optional.of(Integer.parseInt(matcher.group(0).trim()));
         var videos = page.locator(VIDEOS_LOCATOR);
         videos.first().waitFor(new Locator.WaitForOptions().setTimeout(5000).setState(WaitForSelectorState.ATTACHED));
-        Set<String> videoLinks = new HashSet<>();
 
         int videosLoadedCheckpoint = 0; // Track the number of videos before scrolling
         var continueScraping = true;

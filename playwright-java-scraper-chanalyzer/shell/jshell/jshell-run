@@ -2,4 +2,4 @@
 
 mvn compile dependency:build-classpath -Dmdep.outputFile=classpath.txt
 classpath=$(cat classpath.txt):target/classes
-jshell --class-path "$classpath" --startup shell/jshell/startup.jsh shell/jshell/init.jsh
+jshell --class-path "$classpath" --startup shell/jshell/project-imports.jsh shell/jshell/init.jsh
