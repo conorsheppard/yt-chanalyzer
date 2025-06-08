@@ -6,7 +6,7 @@ import "./Toggle.css";
 
 const scraperApi = process.env.REACT_APP_ANALYTICS_API;
 const ytBaseUrl = "https://www.youtube.com/";
-const maxVideos = 88;
+const maxVideos = 100;
 
 function App() {
   const [values, setValues] = useState({channelname: ""});
@@ -15,7 +15,8 @@ function App() {
   const [avgViewsGraphData, setAvgViewsGraphData] = useState();
   const [mainGraphData, setMainGraphData] = useState();
   const [graphData, setGraphData] = useState([]);
-  const [interval, setInterval] = useState();
+  const [videoCount, setVideoCount] = useState(0);
+  const [videoMonthIndex, setVideoMonthIndex] = useState(0); // keeps track of which month the incoming SSE slots into
   const [processingComplete, setProcessingComplete] = useState(false);
   const [placeholder, setPlaceholder] = useState("@NASA");
   const [loading, setLoading] = useState(false);
@@ -36,22 +37,38 @@ function App() {
     setPlaceholder(values["channelname"]);
     setLoading(true);
     setProcessingComplete(false);
+    setVideoCount(0);
     let mainGraphData = initMainGraph();
     let avgViewsGraphData = initAvgViewsGraph();
     setGraphData(showAvgViewsGraph.current ? avgViewsGraphData : mainGraphData);
 
     const eventSource = new EventSource(`${scraperApi}/v1/channels/${values["channelname"]}/videos`);
+    let localVideoMonthIndex = 0;
 
     eventSource.onmessage = event => {
       setLoading(false);
       const eventData = JSON.parse(event.data);
-      let mainGraphData = initMainGraph();
-      let avgViewsGraphData = initAvgViewsGraph();
-      mainGraphData["labels"] = eventData["labels"];
-      avgViewsGraphData["labels"] = eventData["labels"];
-      mainGraphData["datasets"][0]["data"] = eventData["datasets"][0]["data"];
-      mainGraphData["datasets"][1]["data"] = eventData["datasets"][1]["data"];
-      avgViewsGraphData["datasets"][0]["data"] = eventData["datasets"][2]["data"];
+      if (!mainGraphData["labels"].includes(eventData["labels"][0])) {
+        console.log("adding new label: ", eventData["labels"][0]);
+        localVideoMonthIndex++;
+        mainGraphData["labels"] = [...mainGraphData["labels"], eventData["labels"][0]];
+        avgViewsGraphData["labels"] = [...avgViewsGraphData["labels"], eventData["labels"][0]];
+      }
+      if (typeof mainGraphData["datasets"][0]["data"][localVideoMonthIndex] === "undefined") {
+        mainGraphData["datasets"][0]["data"][localVideoMonthIndex] = 0;
+        mainGraphData["datasets"][1]["data"][localVideoMonthIndex] = 0;
+        avgViewsGraphData["datasets"][0]["data"][localVideoMonthIndex] = 0;
+      }
+      mainGraphData["datasets"][0]["data"][localVideoMonthIndex] += 1;
+
+      mainGraphData["datasets"][1]["data"][localVideoMonthIndex] =
+        (parseFloat(mainGraphData["datasets"][1]["data"][localVideoMonthIndex]) || 0) +
+        parseFloat(eventData["datasets"][1]["data"][0]);
+
+      avgViewsGraphData["datasets"][0]["data"][localVideoMonthIndex] =
+        (parseFloat(avgViewsGraphData["datasets"][0]["data"][localVideoMonthIndex]) || 0) +
+        parseFloat(eventData["datasets"][2]["data"][0]);
+
       setMainGraphData(mainGraphData);
       setAvgViewsGraphData(avgViewsGraphData);
 
@@ -61,12 +78,14 @@ function App() {
         setGraphData(mainGraphData);
       }
 
-      setInterval(eventData["currentInterval"]);
-
-      if (eventData["currentInterval"] === maxVideos) {
-          eventSource.close();
-          setProcessingComplete(true);
-      }
+        setVideoCount(prev => {
+          const count = prev + 1;
+          if (count === maxVideos) {
+            eventSource.close();
+            setProcessingComplete(true);
+          }
+          return count;
+        });
     }
 
     return () => eventSource.close();
@@ -107,9 +126,9 @@ function App() {
                 </div>
               </div>
               <div className="processing-indicator medium-text">
-                {processingComplete === true && <span>Processing complete. </span>}{typeof(interval) === 'undefined' ? 0 : ' ' + interval} videos processed{processingComplete === true ? <span>.</span> : <span>...</span>}
+                {processingComplete && <span>Processing complete. </span>} {videoCount} videos processed{processingComplete ? <span>.</span> : <span>...</span>}
               </div>
-              <BarChart data={graphData} />
+              <BarChart key={videoCount} data={graphData} />
             </div>
           }
         </div>
