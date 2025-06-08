@@ -22,6 +22,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -91,7 +92,7 @@ public class ScrapeService {
                         String videoId = renderer.path("videoId").asText();
                         String title = renderer.path("title").path("runs").get(0).path("text").asText();
                         String views = renderer.path("viewCountText").path("simpleText").asText();
-                        LocalDate published = parseRelativeDate(renderer.path("publishedTimeText").path("simpleText").asText());
+                        String published = parseRelativeDate(renderer.path("publishedTimeText").path("simpleText").asText());
                         String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
 
                         if (videoLinks.add(videoUrl)) {
@@ -100,7 +101,7 @@ public class ScrapeService {
                                     .setTitle(title)
                                     .setUrl(videoUrl)
                                     .setViews(views)
-                                    .setPublishedTime(published == null ? LocalDate.now().toString() : published.toString()));
+                                    .setPublishedTime(published == null ? LocalDate.now().toString() : published));
                             log.info("pushed to sink");
                         }
                     }
@@ -241,12 +242,12 @@ public class ScrapeService {
         String relativeDate = (viewsLineIndex + 1 < lines.length) ? lines[viewsLineIndex + 1].trim() : "";
 
         // 4. Convert relative date to LocalDate (approximate)
-        LocalDate publishedDate = parseRelativeDate(relativeDate);
+        String publishedDate = parseRelativeDate(relativeDate);
 
         return new YouTubeVideoMetadata(title, views, publishedDate, relativeDate);
     }
 
-    public static LocalDate parseRelativeDate(String text) {
+    public static String parseRelativeDate(String text) {
         Pattern p = Pattern.compile("(\\d+)\\s+(second|minute|hour|day|week|month|year)s?\\s+ago", Pattern.CASE_INSENSITIVE);
         Matcher m = p.matcher(text);
         if (m.find()) {
@@ -254,23 +255,22 @@ public class ScrapeService {
             String unit = m.group(2).toLowerCase();
 
             LocalDate now = LocalDate.now();
-            switch (unit) {
-                case "second", "minute", "hour":
-                    return now; // approximate to today
-                case "day":
-                    return now.minusDays(amount);
-                case "week":
-                    return now.minusWeeks(amount);
-                case "month":
-                    return now.minusMonths(amount);
-                case "year":
-                    return now.minusYears(amount);
-            }
+            LocalDate resultDate = switch (unit) {
+                case "second", "minute", "hour" -> now; // approximate to today
+                case "day" -> now.minusDays(amount);
+                case "week" -> now.minusWeeks(amount);
+                case "month" -> now.minusMonths(amount);
+                case "year" -> now.minusYears(amount);
+                default -> now;
+            };
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, uuuu");
+            return resultDate.format(formatter);
         }
         return null;
     }
 
-    record YouTubeVideoMetadata(String title, String views, LocalDate publishedDate, String rawDateText) {
+    record YouTubeVideoMetadata(String title, String views, String publishedDate, String rawDateText) {
         public String toString() {
             return String.format("Title: %s%nViews: %s%nDate: %s (%s)", title, views,
                     publishedDate != null ? publishedDate : "Unknown", rawDateText);

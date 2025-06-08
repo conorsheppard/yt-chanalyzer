@@ -1,4 +1,4 @@
-package app;
+package com.conorsheppard.app;
 
 import org.junit.jupiter.api.Test;
 
