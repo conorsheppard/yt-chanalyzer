@@ -4,6 +4,7 @@ import com.conorsheppard.app.entity.YouTubeVideo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.playwright.*;
+import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.WaitForSelectorState;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -14,14 +15,18 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 
+import java.io.File;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.conorsheppard.app.utils.CookieUtils.*;
 
 @Slf4j
 @Service
@@ -34,6 +39,7 @@ public class ScrapeService {
     private static final String HREF_LOCATOR = "a#thumbnail"; // <a> tag with id="thumbnail"
     private static final String VIDEOS_LOCATOR = "ytd-rich-item-renderer";
     private static final boolean IS_HEADLESS = true;
+    private static final int VIDEOS_TIMEOUT = 10_000;
     HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
 
     @SneakyThrows
@@ -85,7 +91,7 @@ public class ScrapeService {
                         String videoId = renderer.path("videoId").asText();
                         String title = renderer.path("title").path("runs").get(0).path("text").asText();
                         String views = renderer.path("viewCountText").path("simpleText").asText();
-                        String published = renderer.path("publishedTimeText").path("simpleText").asText();
+                        LocalDate published = parseRelativeDate(renderer.path("publishedTimeText").path("simpleText").asText());
                         String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
 
                         if (videoLinks.add(videoUrl)) {
@@ -94,7 +100,7 @@ public class ScrapeService {
                                     .setTitle(title)
                                     .setUrl(videoUrl)
                                     .setViews(views)
-                                    .setPublishedTime(published));
+                                    .setPublishedTime(published == null ? LocalDate.now().toString() : published.toString()));
                             log.info("pushed to sink");
                         }
                     }
@@ -110,42 +116,41 @@ public class ScrapeService {
     }
 
     private Flux<YouTubeVideo> scrapeWithPlaywright(String channelName, int maxVideos, Set<String> videoLinks) {
-        return Flux.empty();
-//        return Flux.create((FluxSink<YouTubeVideo> sink) -> {
-//                    Playwright playwright = Playwright.create();
-//                    Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(IS_HEADLESS));
-//                    File cookiesFile = handleCookies();
-//                    try (BrowserContext context = browser.newContext(new Browser.NewContextOptions()
-//                                    .setStorageStatePath(Path.of(COOKIES_FILE))
-//                                    .setExtraHTTPHeaders(Map.of("User-Agent", USER_AGENT, "Accept-Language", "en-US,en;q=0.9"))
-////                    .setRecordVideoDir(Paths.get("videos/youtube/"))
-////                    .setRecordVideoSize(1280, 720)
-//                    )) {
-//
-//                        ensureCookiesFileExists();
-//
-//                        if (cookiesFile.exists() && cookiesFile.length() > 0) {
-//                            context.addCookies(loadCookies());
-//                            log.info("Loaded cookies from file.");
-//                        }
-//
-//                        try (Page page = context.newPage()) {
-//                            var channel = channelURL.replace("${CHANNEL}", channelName);
-//                            page.navigate(channel);
-//                            Locator acceptButton = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Accept all"));
-//                            if (acceptButton.isVisible()) acceptButton.click();
-//                            getVideos(page, sink, maxVideos, videoLinks);
-//                            sink.complete();
-//                            log.info("Extracted {} video URLs", videoLinks.size());
-//                        }
-//                        saveCookies(context);
-//                    }
-//                    browser.close();
-//                })
-//                .doOnSubscribe(sub -> log.info("Subscriber connected"))
-////                .log()
-//                .share() // replays results to new subscribers
-//                .doAfterTerminate(() -> log.info("exiting scrapeChannel"));
+        return Flux.create((FluxSink<YouTubeVideo> sink) -> {
+                    Playwright playwright = Playwright.create();
+                    Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(IS_HEADLESS));
+                    File cookiesFile = handleCookies();
+                    try (BrowserContext context = browser.newContext(new Browser.NewContextOptions()
+                                    .setStorageStatePath(Path.of(COOKIES_FILE))
+                                    .setExtraHTTPHeaders(Map.of("User-Agent", USER_AGENT, "Accept-Language", "en-US,en;q=0.9"))
+//                    .setRecordVideoDir(Paths.get("videos/youtube/"))
+//                    .setRecordVideoSize(1280, 720)
+                    )) {
+
+                        ensureCookiesFileExists();
+
+                        if (cookiesFile.exists() && cookiesFile.length() > 0) {
+                            context.addCookies(loadCookies());
+                            log.info("Loaded cookies from file.");
+                        }
+
+                        try (Page page = context.newPage()) {
+                            var channel = channelURL.replace("${CHANNEL}", channelName);
+                            page.navigate(channel);
+                            Locator acceptButton = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Accept all"));
+                            if (acceptButton.isVisible()) acceptButton.click();
+                            getVideos(page, sink, maxVideos, videoLinks);
+                            sink.complete();
+                            log.info("Extracted {} video URLs", videoLinks.size());
+                        }
+                        saveCookies(context);
+                    }
+                    browser.close();
+                })
+                .doOnSubscribe(sub -> log.info("Subscriber connected"))
+                .log()
+                .share() // replays results to new subscribers
+                .doAfterTerminate(() -> log.info("exiting scrapeChannel"));
     }
 
     private static Set<String> getVideos(Page page, FluxSink<YouTubeVideo> sink, int maxVideos, Set<String> videoLinks) {
@@ -155,7 +160,7 @@ public class ScrapeService {
         Optional<Integer> totalVideosBelow1k = Optional.empty();
         if (matcher.find()) totalVideosBelow1k = Optional.of(Integer.parseInt(matcher.group(0).trim()));
         var videos = page.locator(VIDEOS_LOCATOR);
-        videos.first().waitFor(new Locator.WaitForOptions().setTimeout(5000).setState(WaitForSelectorState.ATTACHED));
+        videos.first().waitFor(new Locator.WaitForOptions().setTimeout(VIDEOS_TIMEOUT).setState(WaitForSelectorState.ATTACHED));
 
         int videosLoadedCheckpoint = 0; // Track the number of videos before scrolling
         var continueScraping = true;
@@ -206,7 +211,7 @@ public class ScrapeService {
             log.info("scrolling …");
             page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)");
             log.info("waiting for videos to load …");
-            videos.nth(count + 1).waitFor(new Locator.WaitForOptions().setTimeout(5000).setState(WaitForSelectorState.ATTACHED));
+            videos.nth(count + 1).waitFor(new Locator.WaitForOptions().setTimeout(VIDEOS_TIMEOUT).setState(WaitForSelectorState.ATTACHED));
             log.info("videos loaded");
         }
         return videoLinks;
