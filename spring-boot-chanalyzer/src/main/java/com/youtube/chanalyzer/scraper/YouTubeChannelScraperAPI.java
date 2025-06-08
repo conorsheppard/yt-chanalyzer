@@ -34,6 +34,7 @@ public class YouTubeChannelScraperAPI implements ScraperAPI<ChartJSDataResponseD
                 .bodyToFlux(YouTubeVideoDTO.class)
                 .map(yt -> List.of(new HashMap<>(Map.of("uploadDate", yt.getPublishedTime(), "viewCount", yt.getViews()))))
                 .map(ChartJSDataResponseDTO::new)
+                .log()
                 .share();
     }
 
@@ -46,7 +47,7 @@ public class YouTubeChannelScraperAPI implements ScraperAPI<ChartJSDataResponseD
 
         for (HashMap<String, String> res : responseBody) {
             String videoDate = res.get("uploadDate");
-            double viewCount = Double.parseDouble(res.get("viewCount").replaceAll(",", "").replace(" views", ""));
+            double viewCount = parseViewCount(res.get("viewCount"));
             Pattern pattern = Pattern.compile("( \\d{1,2},)");
             Matcher matcher = pattern.matcher(videoDate);
             var match = matcher.find();
@@ -84,4 +85,34 @@ public class YouTubeChannelScraperAPI implements ScraperAPI<ChartJSDataResponseD
 
         return response;
     }
+
+    public static double parseViewCount(String viewCountText) {
+        if (viewCountText == null || viewCountText.isBlank()) return 0;
+
+        String cleaned = viewCountText
+                .toUpperCase()
+                .replace(" VIEWS", "")
+                .replace(",", "")
+                .trim();
+
+        double multiplier = 1.0;
+
+        if (cleaned.endsWith("K")) {
+            multiplier = 1_000;
+            cleaned = cleaned.substring(0, cleaned.length() - 1);
+        } else if (cleaned.endsWith("M")) {
+            multiplier = 1_000_000;
+            cleaned = cleaned.substring(0, cleaned.length() - 1);
+        } else if (cleaned.endsWith("B")) {
+            multiplier = 1_000_000_000;
+            cleaned = cleaned.substring(0, cleaned.length() - 1);
+        }
+
+        try {
+            return Double.parseDouble(cleaned) * multiplier;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
 }
