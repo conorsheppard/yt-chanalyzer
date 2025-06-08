@@ -43,13 +43,13 @@ function App() {
     setGraphData(showAvgViewsGraph.current ? avgViewsGraphData : mainGraphData);
 
     const eventSource = new EventSource(`${scraperApi}/v1/channels/${values["channelname"]}/videos`);
-    let localVideoMonthIndex = 0;
+    let localVideoMonthIndex = -1;
 
     eventSource.onmessage = event => {
       setLoading(false);
       const eventData = JSON.parse(event.data);
       if (!mainGraphData["labels"].includes(eventData["labels"][0])) {
-        console.log("adding new label: ", eventData["labels"][0]);
+        updateAvgForMonth(avgViewsGraphData, mainGraphData, localVideoMonthIndex);
         localVideoMonthIndex++;
         mainGraphData["labels"] = [...mainGraphData["labels"], eventData["labels"][0]];
         avgViewsGraphData["labels"] = [...avgViewsGraphData["labels"], eventData["labels"][0]];
@@ -81,6 +81,7 @@ function App() {
         setVideoCount(prev => {
           const count = prev + 1;
           if (count === maxVideos) {
+            updateAvgForMonth(avgViewsGraphData, mainGraphData, localVideoMonthIndex);
             eventSource.close();
             setProcessingComplete(true);
           }
@@ -144,6 +145,13 @@ function isEmpty(obj) {
   }
 
   return true;
+}
+
+function updateAvgForMonth(avgViewsGraphData, mainGraphData, index) {
+  const total = parseFloat(avgViewsGraphData["datasets"][0]["data"][index]) || 0;
+  const count = mainGraphData["datasets"][0]["data"][index] || 1; // Avoid division by zero
+  const average = total / count;
+  avgViewsGraphData["datasets"][0]["data"][index] = average;
 }
 
 function initMainGraph() {
