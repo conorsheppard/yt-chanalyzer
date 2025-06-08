@@ -46,8 +46,7 @@ public class YouTubeChannelScraperAPI implements ScraperAPI<ChartJSDataResponseD
 
         for (HashMap<String, String> res : responseBody) {
             String videoDate = res.get("uploadDate");
-            videoDate = convertDateFormat(videoDate);
-            double viewCount = Double.parseDouble(res.get("viewCount").replaceAll(",", "").replace(" views", "").replace("K", "000").replace("M", "000000"));
+            double viewCount = Double.parseDouble(res.get("viewCount").replaceAll(",", "").replace(" views", ""));
             Pattern pattern = Pattern.compile("( \\d{1,2},)");
             Matcher matcher = pattern.matcher(videoDate);
             var match = matcher.find();
@@ -84,12 +83,5 @@ public class YouTubeChannelScraperAPI implements ScraperAPI<ChartJSDataResponseD
         response.setDatasets(datasets);
 
         return response;
-    }
-
-    private static String convertDateFormat(String inputDate) {
-        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
-        LocalDate date = LocalDate.parse(inputDate, inputFormatter);
-        return date.format(outputFormatter);
     }
 }
