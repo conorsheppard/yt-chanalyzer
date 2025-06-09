@@ -23,5 +23,6 @@ public class ScrapedVideo {
     private LocalDate publishedDate;
     private Integer views;
     private String monthLabel;
-    private Instant scrapedAt = Instant.now();
+    private Instant scrapedAt = Instant.now(); // time the individual video was scraped at
+    private LocalDate scrapedDate; // the day this scrape was done, helps when scrapes cross date boundaries
 }

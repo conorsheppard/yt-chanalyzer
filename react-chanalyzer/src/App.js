@@ -48,12 +48,16 @@ function App() {
     eventSource.onmessage = event => {
       setLoading(false);
       const eventData = JSON.parse(event.data);
-      if (!mainGraphData["labels"].includes(eventData.publishedTime)) {
+      const date = new Date(eventData.publishedTime);
+      const options = { year: 'numeric', month: 'short' };
+      const videoUploadedMonth = date.toLocaleDateString('en-US', options);
+      if (!mainGraphData["labels"].includes(videoUploadedMonth)) {
         updateAvgForMonth(avgViewsGraphData, mainGraphData, localVideoMonthIndex);
         localVideoMonthIndex++;
-        mainGraphData["labels"] = [...mainGraphData["labels"], eventData.publishedTime];
-        avgViewsGraphData["labels"] = [...avgViewsGraphData["labels"], eventData.publishedTime];
+        mainGraphData["labels"] = [...mainGraphData["labels"], videoUploadedMonth];
+        avgViewsGraphData["labels"] = [...avgViewsGraphData["labels"], videoUploadedMonth];
       }
+
       if (typeof mainGraphData["datasets"][0]["data"][localVideoMonthIndex] === "undefined") {
         mainGraphData["datasets"][0]["data"][localVideoMonthIndex] = 0;
         mainGraphData["datasets"][1]["data"][localVideoMonthIndex] = 0;
