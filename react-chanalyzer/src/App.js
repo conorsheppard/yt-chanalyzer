@@ -48,11 +48,11 @@ function App() {
     eventSource.onmessage = event => {
       setLoading(false);
       const eventData = JSON.parse(event.data);
-      if (!mainGraphData["labels"].includes(eventData["labels"][0])) {
+      if (!mainGraphData["labels"].includes(eventData.publishedTime)) {
         updateAvgForMonth(avgViewsGraphData, mainGraphData, localVideoMonthIndex);
         localVideoMonthIndex++;
-        mainGraphData["labels"] = [...mainGraphData["labels"], eventData["labels"][0]];
-        avgViewsGraphData["labels"] = [...avgViewsGraphData["labels"], eventData["labels"][0]];
+        mainGraphData["labels"] = [...mainGraphData["labels"], eventData.publishedTime];
+        avgViewsGraphData["labels"] = [...avgViewsGraphData["labels"], eventData.publishedTime];
       }
       if (typeof mainGraphData["datasets"][0]["data"][localVideoMonthIndex] === "undefined") {
         mainGraphData["datasets"][0]["data"][localVideoMonthIndex] = 0;
@@ -63,11 +63,11 @@ function App() {
 
       mainGraphData["datasets"][1]["data"][localVideoMonthIndex] =
         (parseFloat(mainGraphData["datasets"][1]["data"][localVideoMonthIndex]) || 0) +
-        parseFloat(eventData["datasets"][1]["data"][0]);
+        parseFloat(eventData.views) / 1000000;
 
       avgViewsGraphData["datasets"][0]["data"][localVideoMonthIndex] =
         (parseFloat(avgViewsGraphData["datasets"][0]["data"][localVideoMonthIndex]) || 0) +
-        parseFloat(eventData["datasets"][2]["data"][0]);
+        parseFloat(eventData.views);
 
       setMainGraphData(mainGraphData);
       setAvgViewsGraphData(avgViewsGraphData);

@@ -7,11 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,21 +16,19 @@ import java.util.regex.Pattern;
 @AllArgsConstructor
 @Slf4j
 @Component
-public class YouTubeChannelScraperAPI implements ScraperAPI<ChartJSDataResponseDTO> {
+public class YouTubeChannelScraperAPI implements ScraperAPI<YouTubeVideoDTO> {
     private final WebClient webClient;
 
-    public Flux<ChartJSDataResponseDTO> getChannelVideoData(String channelName, int numVideos) {
+    public Flux<YouTubeVideoDTO> getChannelVideoData(String channelName, int numVideos) {
         return getScrapeResponse(channelName, numVideos);
     }
 
-    private Flux<ChartJSDataResponseDTO> getScrapeResponse(String channelName, int numVideos) {
+    private Flux<YouTubeVideoDTO> getScrapeResponse(String channelName, int numVideos) {
         return webClient.get()
                 .uri("?channel=" + channelName + "&numVideos=" + numVideos)
                 .accept(MediaType.valueOf(MediaType.TEXT_EVENT_STREAM_VALUE))
                 .retrieve()
                 .bodyToFlux(YouTubeVideoDTO.class)
-                .map(yt -> List.of(new HashMap<>(Map.of("uploadDate", yt.getPublishedTime(), "viewCount", yt.getViews()))))
-                .map(ChartJSDataResponseDTO::new)
                 .log()
                 .share();
     }

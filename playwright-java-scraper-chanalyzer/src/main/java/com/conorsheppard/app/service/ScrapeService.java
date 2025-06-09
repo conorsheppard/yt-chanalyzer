@@ -72,14 +72,11 @@ public class ScrapeService {
                 .orElseThrow();
 
         String jsonString = scriptContent.substring(scriptContent.indexOf('{'), scriptContent.lastIndexOf('}') + 1);
-        log.info(jsonString);
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonString);
 
-        log.info("creating flux");
         return Flux.create((FluxSink<YouTubeVideo> sink) -> {
-                    // This path may vary slightly based on YouTube’s internal structure
                     List<JsonNode> videoRenderers = new ArrayList<>();
                     rootNode.findParents("videoRenderer").forEach(node -> {
                         JsonNode renderer = node.get("videoRenderer");
@@ -87,7 +84,7 @@ public class ScrapeService {
                             videoRenderers.add(renderer);
                         }
                     });
-                    log.info("before for loop");
+
                     for (JsonNode renderer : videoRenderers) {
                         String videoId = renderer.path("videoId").asText();
                         String title = renderer.path("title").path("runs").get(0).path("text").asText();
@@ -96,18 +93,16 @@ public class ScrapeService {
                         String videoUrl = "https://www.youtube.com/watch?v=" + videoId;
 
                         if (videoLinks.add(videoUrl)) {
-                            log.info("adding video url: {}", videoUrl);
                             sink.next(new YouTubeVideo()
                                     .setTitle(title)
                                     .setUrl(videoUrl)
+                                    .setVideoId(videoId)
                                     .setViews(views)
                                     .setPublishedTime(published == null ? LocalDate.now().toString() : published));
-                            log.info("pushed to sink");
                         }
                     }
-                    log.info("after for loop");
+
                     sink.complete();
-                    log.info("sink complete");
                 })
                 .doOnSubscribe(sub -> log.info("Subscriber connected to initial scrape Flux"))
                 .doOnNext(yt -> log.info("grabbing video: \"{}\" from initial scrape", yt.getTitle()))
@@ -182,13 +177,15 @@ public class ScrapeService {
                 var videoMetadata = extractMetadata(vidInfoInnerText);
                 var href = video.locator(HREF_LOCATOR).first().getAttribute("href");
                 if (href != null && href.contains("watch")) {
-                    var videoUrl = "https://www.youtube.com" + href.substring(0, 20);
+                    var videoId = href.substring(9, 20);
+                    var videoUrl = "https://www.youtube.com/watch?=" + videoId;
                     if (videoLinks.add(videoUrl)) {
                         sink.next(new YouTubeVideo()
                                 .setTitle(videoMetadata.title)
                                 .setUrl(videoUrl)
+                                .setVideoId(videoId)
                                 .setViews(videoMetadata.views)
-                                .setPublishedTime(videoMetadata.publishedDate.toString()));
+                                .setPublishedTime(videoMetadata.publishedDate));
                     } else {
                         log.info("skipping {}, already added", videoUrl);
                     }

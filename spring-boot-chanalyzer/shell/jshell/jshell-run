@@ -1,0 +1,6 @@
+#!/bin/zsh
+
+mvn compile dependency:build-classpath -Dmdep.outputFile=classpath.txt
+classpath=$(cat classpath.txt):target/classes
+# run extract-imports.sh to populate the project-imports.jsh file
+jshell --class-path "$classpath" --startup shell/jshell/project-imports.jsh shell/jshell/init.jsh

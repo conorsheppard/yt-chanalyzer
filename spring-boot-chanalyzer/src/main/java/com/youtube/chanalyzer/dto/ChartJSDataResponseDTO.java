@@ -17,16 +17,10 @@ import static com.youtube.chanalyzer.scraper.YouTubeChannelScraperAPI.sortVideos
 public class ChartJSDataResponseDTO {
     List<String> labels;
     List<Map<String, List<String>>> datasets;
-    Integer currentInterval;
 
     public ChartJSDataResponseDTO(List<HashMap<String, String>> responseObject) {
         var res = sortVideosIntoMonths(responseObject);
         this.labels = res.labels;
         this.datasets = res.datasets;
-    }
-
-    public ChartJSDataResponseDTO setCurrentInterval(Integer currentInterval) {
-        this.currentInterval = currentInterval;
-        return this;
     }
 }

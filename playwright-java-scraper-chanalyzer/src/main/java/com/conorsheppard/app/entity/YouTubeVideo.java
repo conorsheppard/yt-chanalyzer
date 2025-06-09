@@ -12,6 +12,7 @@ import lombok.experimental.Accessors;
 public class YouTubeVideo {
     private String title;
     private String url;
+    private String videoId;
     private String views;
     private String publishedTime;
 }
