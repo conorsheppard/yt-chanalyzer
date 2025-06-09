@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Data
 @Entity
 @Table(name = "scraped_videos", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"channel_name", "video_id", "scraped_at"})
+        @UniqueConstraint(columnNames = {"channel_name", "video_id", "scraped_date"})
 })
 public class ScrapedVideo {
 

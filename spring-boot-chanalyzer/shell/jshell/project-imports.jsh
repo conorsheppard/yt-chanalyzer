@@ -1,6 +1,5 @@
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
 import com.youtube.chanalyzer.dto.YouTubeVideoDTO;
 import com.youtube.chanalyzer.entity.ScrapedVideo;
 import com.youtube.chanalyzer.repo.ScrapedVideoRepository;

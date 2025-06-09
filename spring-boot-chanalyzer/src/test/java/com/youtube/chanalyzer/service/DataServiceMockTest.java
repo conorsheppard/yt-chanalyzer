@@ -1,6 +1,5 @@
 package com.youtube.chanalyzer.service;
 
-import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
 import com.youtube.chanalyzer.scraper.ScraperAPI;
 import lombok.SneakyThrows;
 import okhttp3.mockwebserver.MockResponse;

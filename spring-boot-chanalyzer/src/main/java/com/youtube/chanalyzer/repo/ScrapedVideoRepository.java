@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface ScrapedVideoRepository extends JpaRepository<ScrapedVideo, Long> {
-    List<ScrapedVideo> findByChannelNameAndScrapedDate(String channelName, LocalDate scrapeDate);
+    List<ScrapedVideo> findByChannelNameAndScrapedDate(String channelName, LocalDate scrapedDate);
+    List<ScrapedVideo> findByVideoIdAndScrapedDate(String videoId, LocalDate scrapedDate);
 }
 

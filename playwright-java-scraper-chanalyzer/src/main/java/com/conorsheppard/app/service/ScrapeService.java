@@ -49,7 +49,7 @@ public class ScrapeService {
         return Flux.merge(
                 httpClientScrape(channelName, videoLinks),
                 scrapeWithPlaywright(channelName, maxVideos, videoLinks)
-        ).distinct(YouTubeVideo::getUrl);
+        ).distinct(YouTubeVideo::getVideoId);
     }
 
     @SneakyThrows
