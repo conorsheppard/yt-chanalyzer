@@ -10,6 +10,7 @@ import reactor.core.publisher.Flux;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 
 import static com.youtube.chanalyzer.scraper.YouTubeChannelScraperAPI.parseViewCount;
@@ -26,6 +27,17 @@ public class YTChannelDataService {
     }
 
     public Flux<YouTubeVideoDTO> getChannelVideoData(String channelName, int numVideos) {
+        LocalDate today = LocalDate.now();
+        List<ScrapedVideo> cachedVideoData = scrapedVideoRepository.findByChannelNameAndScrapedDate(channelName, today);
+
+        if (!cachedVideoData.isEmpty()) {
+            return Flux.fromIterable(cachedVideoData.stream().map(v ->
+                    new YouTubeVideoDTO()
+                            .setViews(v.getViews() + "")
+                            .setPublishedTime(v.getPublishedDate().toString()))
+                    .toList());
+        }
+
         return scraperAPI.getChannelVideoData(channelName, numVideos)
                 .map(data -> {
                     ScrapedVideo video = new ScrapedVideo();
