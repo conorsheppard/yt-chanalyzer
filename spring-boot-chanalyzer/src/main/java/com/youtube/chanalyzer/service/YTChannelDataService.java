@@ -27,7 +27,7 @@ public class YTChannelDataService {
     }
 
     public Flux<YouTubeVideoDTO> getChannelVideoData(String channelName, int numVideos) {
-        LocalDate today = LocalDate.now();
+        final LocalDate today = LocalDate.now();
         List<ScrapedVideo> cachedVideoData = scrapedVideoRepository.findByChannelNameAndScrapedDate(channelName, today);
 
         if (!cachedVideoData.isEmpty()) {
@@ -48,6 +48,7 @@ public class YTChannelDataService {
                             DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.ENGLISH)));
                     video.setViews((int) parseViewCount(data.getViews()));
                     video.setMonthLabel(data.getPublishedTime());
+                    video.setScrapedDate(today);
                     scrapedVideoRepository.save(video);
 
                     data.setViews(parseViewCount(data.getViews()) + "");

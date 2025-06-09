@@ -17,6 +17,9 @@ build:
 db-start:
 	docker run --name postgres-videos-db -e POSTGRES_USER=user -e POSTGRES_PASSWORD=root -e POSTGRES_DB=videosdb -p 5432:5432 -d postgres
 
+db-reset:
+	docker exec -it postgres-videos-db psql -U user -d videosdb -c "delete from scraped_videos; ALTER SEQUENCE scraped_videos_id_seq RESTART WITH 1;"
+
 ssh-db:
 	docker exec -it postgres-videos-db psql -U user -d videosdb
 
