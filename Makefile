@@ -3,12 +3,12 @@ SHELL := /bin/bash
 default: up-local
 
 build:
-	mvn clean package -f spring-boot-chanalyzer/pom.xml
+	./mvnw clean package -f spring-boot-chanalyzer/pom.xml
 
 docker-nuke:
 	docker ps -aq | tail -n+2 | grep . && docker stop $(docker ps -aq) || docker container prune -f && docker image prune -af && docker system prune -af && docker volume prune -f
 
-up-local: build
+up-local:
 	docker-compose -f compose.yml up
 
 up:
