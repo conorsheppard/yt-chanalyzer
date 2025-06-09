@@ -1,17 +1,15 @@
 package com.youtube.chanalyzer.scraper;
 
-import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
 import com.youtube.chanalyzer.dto.YouTubeVideoDTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
-
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import reactor.core.publisher.Mono;
+import reactor.netty.http.client.PrematureCloseException;
 
 @AllArgsConstructor
 @Slf4j
@@ -30,55 +28,22 @@ public class YouTubeChannelScraperAPI implements ScraperAPI<YouTubeVideoDTO> {
                 .retrieve()
                 .bodyToFlux(YouTubeVideoDTO.class)
                 .log()
-                .share();
-    }
-
-    public static ChartJSDataResponseDTO sortVideosIntoMonths(List<HashMap<String, String>> responseBody) {
-        ChartJSDataResponseDTO response = new ChartJSDataResponseDTO();
-        LinkedHashMap<String, Integer> monthsAndNumUploadsMap = new LinkedHashMap<>();
-        LinkedHashMap<String, Double> monthsAndTotalViewsMap = new LinkedHashMap<>();
-        List<String> videoDatesList = new ArrayList<>(), videoViewsList = new ArrayList<>(), avgVideoViewsList = new ArrayList<>();
-        Map<String, List<String>> videoDatesMap = new LinkedHashMap<>(), videoViewsMap = new LinkedHashMap<>(), avgVideoViewsMap = new LinkedHashMap<>();
-
-        for (HashMap<String, String> res : responseBody) {
-            String videoDate = res.get("uploadDate");
-            double viewCount = parseViewCount(res.get("viewCount"));
-            Pattern pattern = Pattern.compile("( \\d{1,2},)");
-            Matcher matcher = pattern.matcher(videoDate);
-            var match = matcher.find();
-            if (!match) log.error("Failed to parse date: {}", videoDate);
-            String currentMonthAndYear = videoDate.replace(matcher.group(0), ",").replace("Premiered ", "");
-            var currentMonthValue = monthsAndNumUploadsMap.get(currentMonthAndYear) == null ? 0 : monthsAndNumUploadsMap.get(currentMonthAndYear);
-            var currentTotalViews = monthsAndTotalViewsMap.get(currentMonthAndYear) == null ? 0 : monthsAndTotalViewsMap.get(currentMonthAndYear);
-            monthsAndTotalViewsMap.put(currentMonthAndYear, currentTotalViews + viewCount);
-            monthsAndNumUploadsMap.put(currentMonthAndYear, currentMonthValue + 1);
-        }
-        List<String> labels = new ArrayList<>(monthsAndNumUploadsMap.keySet());
-        response.setLabels(labels);
-
-        for (Map.Entry<String, Integer> entry : monthsAndNumUploadsMap.entrySet()) {
-            videoDatesList.add(entry.getValue().toString());
-        }
-        videoDatesMap.put("data", videoDatesList);
-
-        for (Map.Entry<String, Double> entry : monthsAndTotalViewsMap.entrySet()) {
-            double viewCountInMillions = entry.getValue() / 1_000_000.0;
-            videoViewsList.add(Double.toString(viewCountInMillions));
-        }
-        videoViewsMap.put("data", videoViewsList);
-
-        for (Map.Entry<String, Double> entry : monthsAndTotalViewsMap.entrySet()) {
-            var month = entry.getKey();
-            var views = entry.getValue();
-            var avgViews = views / monthsAndNumUploadsMap.get(month);
-            avgVideoViewsList.add(String.valueOf(avgViews));
-        }
-        avgVideoViewsMap.put("data", avgVideoViewsList);
-
-        List<Map<String, List<String>>> datasets = Arrays.asList(videoDatesMap, videoViewsMap, avgVideoViewsMap);
-        response.setDatasets(datasets);
-
-        return response;
+                .share()
+                .onErrorResume(WebClientResponseException.class, ex -> {
+                    // Handles HTTP status-related errors (e.g. 4xx, 5xx or malformed response)
+                    log.error("WebClientResponseException: {}", ex.getMessage(), ex);
+                    return Flux.error(new RuntimeException("Scrape failed due to unexpected response"));
+                })
+                .onErrorResume(PrematureCloseException.class, ex -> {
+                    // Handles connection dropped mid-response
+                    log.error("PrematureCloseException: {}", ex.getMessage(), ex);
+                    return Mono.error(new RuntimeException("Scraper backend closed connection early"));
+                })
+                .onErrorResume(Throwable.class, ex -> {
+                    // Catch-all fallback
+                    log.error("Unexpected error during scrape: {}", ex.getMessage(), ex);
+                    return Mono.error(new RuntimeException("Unexpected scrape error"));
+                });
     }
 
     public static double parseViewCount(String viewCountText) {
@@ -87,6 +52,7 @@ public class YouTubeChannelScraperAPI implements ScraperAPI<YouTubeVideoDTO> {
         String cleaned = viewCountText
                 .toUpperCase()
                 .replace(" VIEWS", "")
+                .replace("PREMIERED ", "")
                 .replace(",", "")
                 .trim();
 
@@ -109,5 +75,4 @@ public class YouTubeChannelScraperAPI implements ScraperAPI<YouTubeVideoDTO> {
             return 0;
         }
     }
-
 }

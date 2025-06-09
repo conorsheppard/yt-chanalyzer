@@ -1,6 +1,5 @@
 package com.youtube.chanalyzer.scraper;
 
-import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
 import com.youtube.chanalyzer.dto.YouTubeVideoDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
