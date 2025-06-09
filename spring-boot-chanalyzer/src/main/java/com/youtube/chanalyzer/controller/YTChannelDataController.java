@@ -1,6 +1,5 @@
 package com.youtube.chanalyzer.controller;
 
-import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
 import com.youtube.chanalyzer.dto.YouTubeVideoDTO;
 import com.youtube.chanalyzer.service.YTChannelDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,7 @@ public class YTChannelDataController {
     }
 
     @GetMapping(path = "/v1/channels/{channelName}/videos", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ChartJSDataResponseDTO> getChannelVideos(@PathVariable String channelName) {
+    public Flux<YouTubeVideoDTO> getChannelVideos(@PathVariable String channelName) {
         return service.getChannelVideoData(channelName, 100);
     }
 }

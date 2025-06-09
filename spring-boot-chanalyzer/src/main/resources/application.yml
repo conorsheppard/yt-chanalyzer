@@ -2,9 +2,19 @@ spring:
   application:
     name: chanalyzer
 
-SCRAPER_API: http://playwright-java-scraper-chanalyzer:5050/api/v1/channels
-YT_BASE_URL: https://www.youtube.com/
+  datasource:
+    url: jdbc:postgresql://localhost:5432/videosdb
+    username: user
+    password: root
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # change to validate or none in production
+    show-sql: true
 
 logging:
   level:
     org.springframework.web.reactive.function.client.ExchangeFunctions: TRACE
+
+SCRAPER_API: http://playwright-java-scraper-chanalyzer:5050/api/v1/channels
+YT_BASE_URL: https://www.youtube.com/
