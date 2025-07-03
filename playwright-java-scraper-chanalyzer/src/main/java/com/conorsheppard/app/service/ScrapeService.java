@@ -41,7 +41,8 @@ public class ScrapeService {
     private static final String VIDEOS_LOCATOR = "ytd-rich-item-renderer";
     private static final boolean IS_HEADLESS = true;
     private static final int VIDEOS_TIMEOUT = 10_000;
-    HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
+    private final HttpClient client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, uuuu");
 
     @SneakyThrows
     public Flux<YouTubeVideo> scrapeChannel(String channelName, int maxVideos) {
@@ -98,7 +99,7 @@ public class ScrapeService {
                                     .setUrl(videoUrl)
                                     .setVideoId(videoId)
                                     .setViews(views)
-                                    .setPublishedTime(published == null ? LocalDate.now().toString() : published));
+                                    .setPublishedTime(published == null ? LocalDate.now().format(formatter) : published));
                         }
                     }
 
@@ -261,7 +262,6 @@ public class ScrapeService {
                 default -> now;
             };
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, uuuu");
             return resultDate.format(formatter);
         }
         return null;

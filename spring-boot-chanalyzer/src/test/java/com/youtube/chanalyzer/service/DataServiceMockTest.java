@@ -1,5 +1,8 @@
 package com.youtube.chanalyzer.service;
 
+import com.youtube.chanalyzer.dto.YouTubeVideoDTO;
+import com.youtube.chanalyzer.repo.ScrapeStatusRepository;
+import com.youtube.chanalyzer.repo.ScrapedVideoRepository;
 import com.youtube.chanalyzer.scraper.ScraperAPI;
 import lombok.SneakyThrows;
 import okhttp3.mockwebserver.MockResponse;
@@ -17,68 +20,69 @@ import reactor.test.StepVerifier;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 public class DataServiceMockTest {
 
-    public static MockWebServer mockPythonWebScraper;
+    public static MockWebServer mockPlaywrightWebScraper;
     private YTChannelDataService ytChannelDataService;
+    private static ScrapedVideoRepository scrapedVideoRepository;
+    private static ScrapeStatusRepository scrapeStatusRepository;
 
     @BeforeAll
     static void setUp() throws IOException {
-        mockPythonWebScraper = new MockWebServer();
-        mockPythonWebScraper.start();
+        mockPlaywrightWebScraper = new MockWebServer();
+        mockPlaywrightWebScraper.start();
+        scrapedVideoRepository = mock(ScrapedVideoRepository.class);
+        scrapeStatusRepository = mock(ScrapeStatusRepository.class);
     }
 
     @BeforeEach
     void initialize() {
-        ytChannelDataService = new YTChannelDataService(new TestScraperMock());
+        ytChannelDataService = new YTChannelDataService(new TestScraperMock(), scrapedVideoRepository,
+                scrapeStatusRepository);
     }
 
     @AfterAll
     static void tearDown() throws IOException {
-        mockPythonWebScraper.shutdown();
+        mockPlaywrightWebScraper.shutdown();
     }
 
-    static class TestScraperMock implements ScraperAPI<ChartJSDataResponseDTO> {
-        String baseUrl = String.format("http://localhost:%s", mockPythonWebScraper.getPort());
+    static class TestScraperMock implements ScraperAPI<YouTubeVideoDTO> {
+        String baseUrl = String.format("http://localhost:%s", mockPlaywrightWebScraper.getPort());
         private final WebClient wc = WebClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_EVENT_STREAM_VALUE)
                 .build();
 
         @Override
-        public Flux<ChartJSDataResponseDTO> getChannelVideoData(String url, int numVideos) {
-            return Flux
-                    .fromIterable(List.of(1))
-                    .flatMap(i -> wc.get()
-                            .retrieve()
-                            .bodyToMono(ArrayList.class)
-                            .map(ChartJSDataResponseDTO::new)
-                            .map(yt -> yt.setCurrentInterval(i)));
+        public Flux<YouTubeVideoDTO> getChannelVideoData(String url, int numVideos) {
+            return wc.get().uri("?channel=" + url + "&numVideos=" + numVideos)
+                    .accept(MediaType.valueOf(MediaType.TEXT_EVENT_STREAM_VALUE))
+                    .retrieve()
+                    .bodyToFlux(YouTubeVideoDTO.class);
         }
     }
 
     @SneakyThrows
     @Test
     void testGetChannelVideos() {
-        String MOCK_RESPONSE_FILE = "src/test/resources/service/mock-response-body-1-video.txt";
-        var responseBody = new Scanner(new File(MOCK_RESPONSE_FILE)).nextLine();
-        mockPythonWebScraper.enqueue(new MockResponse().setBody(responseBody)
+        String mockResponseFile = "src/test/resources/service/mock-response-data-service-test.json";
+        var responseBody = new Scanner(new File(mockResponseFile)).nextLine();
+        mockPlaywrightWebScraper.enqueue(new MockResponse().setBody(responseBody)
                 .addHeader("Content-Type", "application/json"));
-        var channelUrl = "https://www.youtube.com/@NASA";
-        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(channelUrl, 100);
+        Flux<YouTubeVideoDTO> response = ytChannelDataService.getChannelVideoData("https://www.youtube.com/@NASA", 100);
 
         StepVerifier.create(response)
-                .expectNextMatches(elem -> elem.getLabels().getFirst().contains("Dec"))
+                .expectNextMatches(elem -> elem.equals(new YouTubeVideoDTO("NASA 2025: To the Moon, Mars, and Beyond",
+                        "https://youtube.com/videos?watch=PPQ29WRT-rU", "PPQ29WRT-rU", "269979", "Dec 27, 2024")))
                 .expectComplete()
                 .verify();
 
-        RecordedRequest recordedRequest = mockPythonWebScraper.takeRequest();
+        RecordedRequest recordedRequest = mockPlaywrightWebScraper.takeRequest();
         assertEquals("GET", recordedRequest.getMethod());
     }
 }
