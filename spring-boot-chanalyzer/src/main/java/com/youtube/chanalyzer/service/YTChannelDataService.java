@@ -100,7 +100,7 @@ public class YTChannelDataService {
                     video.setVideoId(data.getVideoId());
                     video.setPublishedDate(LocalDate.parse(normalizeMonth(data.getPublishedTime()),
                             DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.ENGLISH)));
-                    video.setViews((int) parseViewCount(data.getViews()));
+                    video.setViews(parseViewCount(data.getViews()));
                     video.setMonthLabel(data.getPublishedTime());
                     video.setScrapedDate(today);
                     scrapedVideoRepository.save(video);

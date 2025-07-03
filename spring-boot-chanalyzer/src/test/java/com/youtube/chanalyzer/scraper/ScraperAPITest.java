@@ -11,8 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -52,20 +51,12 @@ class ScraperAPITest {
         var result = channelService.getChannelVideoData(channelUrl, 100);
 
         // Then
+        // Add assertions based on your DTO structure
+        // Add assertions for second response
         StepVerifier.create(result)
-                .expectNextMatches(dto -> {
-                    // Add assertions based on your DTO structure
-                    return dto.getLabels() != null;
-                })
-                .expectNextMatches(dto -> {
-                    // Add assertions for second response
-                    return dto.getLabels() != null;
-                })
+                .expectNextMatches(Objects::nonNull)
+                .expectNextMatches(Objects::nonNull)
                 .verifyComplete();
-    }
-
-    private ChartJSDataResponseDTO getChartResponseForTest(int interval) {
-        return new ChartJSDataResponseDTO().setLabels(List.of()).setDatasets(List.of(Map.of("data", List.of()), Map.of("data", List.of()), Map.of("data", List.of()))).setCurrentInterval(interval);
     }
 
     @Test

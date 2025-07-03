@@ -46,7 +46,7 @@ public class YouTubeChannelScraperAPI implements ScraperAPI<YouTubeVideoDTO> {
                 });
     }
 
-    public static double parseViewCount(String viewCountText) {
+    public static int parseViewCount(String viewCountText) {
         if (viewCountText == null || viewCountText.isBlank()) return 0;
 
         String cleaned = viewCountText
@@ -56,7 +56,7 @@ public class YouTubeChannelScraperAPI implements ScraperAPI<YouTubeVideoDTO> {
                 .replace(",", "")
                 .trim();
 
-        double multiplier = 1.0;
+        int multiplier = 1;
 
         if (cleaned.endsWith("K")) {
             multiplier = 1_000;
@@ -70,7 +70,7 @@ public class YouTubeChannelScraperAPI implements ScraperAPI<YouTubeVideoDTO> {
         }
 
         try {
-            return Double.parseDouble(cleaned) * multiplier;
+            return Integer.parseInt(cleaned) * multiplier;
         } catch (NumberFormatException e) {
             return 0;
         }
