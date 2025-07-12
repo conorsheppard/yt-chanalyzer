@@ -26,7 +26,7 @@ function App() {
       name: "channelname",
       type: "text",
       errormessage: "Channel name should start with an '@' symbol and be a real YouTube channel with at least 1 video.",
-      pattern: "(?:^|[^w])(?:@)([A-Za-z0-9_](?:(?:[A-Za-z0-9_]|(?:.(?!.))){0,28}(?:[A-Za-z0-9_]))?)",
+      pattern: "(?:^|[^w])@([A-Za-z0-9_.](?:[A-Za-z0-9_.]{0,28}[A-Za-z0-9_.])?)",
       required: true,
     }
   ];
