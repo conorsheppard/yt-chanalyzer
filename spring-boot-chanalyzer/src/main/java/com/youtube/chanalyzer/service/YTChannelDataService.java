@@ -1,23 +1,163 @@
 package com.youtube.chanalyzer.service;
 
-import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
+import com.youtube.chanalyzer.dto.YouTubeVideoDTO;
+import com.youtube.chanalyzer.entity.ScrapeStatus;
+import com.youtube.chanalyzer.entity.ScrapedVideo;
+import com.youtube.chanalyzer.repo.ScrapeStatusRepository;
+import com.youtube.chanalyzer.repo.ScrapedVideoRepository;
 import com.youtube.chanalyzer.scraper.ScraperAPI;
-import com.youtube.chanalyzer.scraper.YouTubeChannelScraperAPI;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+
+import static com.youtube.chanalyzer.scraper.YouTubeChannelScraperAPI.parseViewCount;
+
+@Slf4j
 @Service
 public class YTChannelDataService {
-    private final ScraperAPI scraperAPI;
+    private final ScraperAPI<YouTubeVideoDTO> scraperAPI;
+    private final ScrapedVideoRepository scrapedVideoRepository;
+    private final ScrapeStatusRepository scrapeStatusRepository;
+    private static final String COMPLETED = "completed";
+    private static final String IN_PROGRESS = "in_progress";
+    private static final String FAILED = "failed";
 
     @Autowired
-    public YTChannelDataService(ScraperAPI scraperAPI) {
+    public YTChannelDataService(ScraperAPI<YouTubeVideoDTO> scraperAPI,
+                                ScrapedVideoRepository scrapedVideoRepository,
+                                ScrapeStatusRepository scrapeStatusRepository) {
         this.scraperAPI = scraperAPI;
+        this.scrapedVideoRepository = scrapedVideoRepository;
+        this.scrapeStatusRepository = scrapeStatusRepository;
     }
 
-    @SuppressWarnings("unchecked")
-    public Flux<ChartJSDataResponseDTO> getChannelVideoData(String channelUrl) {
-        return (Flux<ChartJSDataResponseDTO>) scraperAPI.getChannelVideoData(channelUrl);
+    @Transactional
+    public Flux<YouTubeVideoDTO> getChannelVideoData(String channelName, int numVideos) {
+        final LocalDate today = LocalDate.now();
+
+        // Lock the status row or check if it exists
+        Optional<ScrapeStatus> lockedStatusOpt = scrapeStatusRepository.findWithLockByChannelNameAndScrapeDate(channelName, today);
+
+        if (lockedStatusOpt.isPresent()) {
+            ScrapeStatus lockedStatus = lockedStatusOpt.get();
+            switch (lockedStatus.getStatus()) {
+                case COMPLETED:
+                    return getCachedData(channelName, today);
+                case IN_PROGRESS:
+                    return waitForScrapeToComplete(channelName, today);
+                case FAILED:
+                    lockedStatus.setStatus(IN_PROGRESS);
+                    lockedStatus.setStartedAt(LocalDateTime.now());
+                    scrapeStatusRepository.save(lockedStatus);
+                    return Flux.mergeDelayError(1,
+                            getCachedData(channelName, today),
+                            scrape(channelName, numVideos, today, lockedStatus)
+                    )
+                    .doOnNext(yt -> log.info("{}", yt))
+                    .distinct(YouTubeVideoDTO::getVideoId)
+                    .doOnComplete(() -> {
+                        log.info("flux merge completed, saving scrape status…");
+                        lockedStatus.setStatus(COMPLETED);
+                        scrapeStatusRepository.saveAndFlush(lockedStatus);
+                    })
+                    .doOnCancel(() -> {
+                        log.warn("Subscription cancelled prematurely");
+                        lockedStatus.setStatus(COMPLETED);
+                        scrapeStatusRepository.save(lockedStatus);
+                    })
+                    .doOnError(e -> log.error("Error in merged flux", e));
+            }
+        }
+
+        // Mark as in progress
+        ScrapeStatus status = new ScrapeStatus();
+        status.setChannelName(channelName);
+        status.setScrapeDate(today);
+        status.setStatus(IN_PROGRESS);
+        status.setStartedAt(LocalDateTime.now());
+        scrapeStatusRepository.save(status);
+
+        return scrape(channelName, numVideos, today, status);
+    }
+
+    private Flux<YouTubeVideoDTO> scrape(String channelName, int numVideos, LocalDate today, ScrapeStatus status) {
+        return scraperAPI.getChannelVideoData(channelName, numVideos)
+                .map(data -> {
+                    ScrapedVideo video = new ScrapedVideo();
+                    video.setChannelName(channelName);
+                    video.setVideoTitle(data.getTitle());
+                    video.setVideoId(data.getVideoId());
+                    video.setPublishedDate(LocalDate.parse(normalizeMonth(data.getPublishedTime()),
+                            DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.ENGLISH)));
+                    video.setViews(parseViewCount(data.getViews()));
+                    video.setMonthLabel(data.getPublishedTime());
+                    video.setScrapedDate(today);
+                    scrapedVideoRepository.save(video);
+
+                    data.setViews(parseViewCount(data.getViews()) + "");
+                    return data;
+                })
+                .doOnComplete(() -> {
+                    status.setStatus(COMPLETED);
+                    status.setUpdatedAt(LocalDateTime.now());
+                    scrapeStatusRepository.save(status);
+                })
+                .doOnError(err -> {
+                    status.setStatus(FAILED);
+                    status.setUpdatedAt(LocalDateTime.now());
+                    scrapeStatusRepository.save(status);
+                });
+    }
+
+    private Flux<YouTubeVideoDTO> getCachedData(String channelName, LocalDate date) {
+        List<ScrapedVideo> cached = scrapedVideoRepository.findByChannelNameAndScrapedDate(channelName, date);
+        return Flux.fromIterable(cached.stream().map(YTChannelDataService::fromScrapedVideo).toList());
+    }
+
+    private Flux<YouTubeVideoDTO> waitForScrapeToComplete(String channelName, LocalDate date) {
+        var videos = new HashSet<String>();
+        return Flux.create(sink -> {
+            for (int i = 0; i < 10; i++) {
+                retrieveVidFromDBAndAddToSink(channelName, date, sink, videos);
+                Optional<ScrapeStatus> statusOpt = scrapeStatusRepository.findByChannelNameAndScrapeDate(channelName, date);
+                if (statusOpt.isPresent() && COMPLETED.equals(statusOpt.get().getStatus())) {
+                    retrieveVidFromDBAndAddToSink(channelName, date, sink, videos);
+                    break;
+                }
+            }
+            sink.complete();
+        });
+    }
+
+    private void retrieveVidFromDBAndAddToSink(String channelName, LocalDate date, FluxSink<YouTubeVideoDTO> sink, HashSet<String> videos) {
+        List<YouTubeVideoDTO> cachedVideos = getCachedData(channelName, date).toStream().toList();
+        for (var video : cachedVideos)
+            if (video.getVideoId() != null && videos.add(video.getVideoId())) {
+                log.info("Adding {} to the sink", video.getVideoId());
+                sink.next(video);
+            }
+    }
+
+    private static String normalizeMonth(String dateStr) {
+        return dateStr.replace("Sept", "Sep");
+    }
+
+    private static YouTubeVideoDTO fromScrapedVideo(ScrapedVideo v) {
+        return new YouTubeVideoDTO()
+                .setVideoId(v.getVideoId())
+                .setTitle(v.getVideoTitle())
+                .setViews(v.getViews() + "")
+                .setPublishedTime(v.getPublishedDate().toString());
     }
 }

@@ -5,27 +5,52 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING.PROFILES.ACTIVE=default
+      - SPRING_PROFILES_ACTIVE=default
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/videosdb
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=root
+    depends_on:
+      - postgres
+      - playwright-java-scraper-chanalyzer
     links:
-      - scraper-service-chanalyzer
+      - playwright-java-scraper-chanalyzer
     build:
       context: ./spring-boot-chanalyzer
       dockerfile: docker-compose/Dockerfile
+
   react-chanalyzer:
     image: "conorsheppard/react-chanalyzer"
     container_name: react-chanalyzer
     ports:
       - "80:3000"
+    depends_on:
+      - spring-boot-chanalyzer
     links:
       - spring-boot-chanalyzer
     build:
       context: ./react-chanalyzer
       dockerfile: docker-compose/Dockerfile
-  scraper-service-chanalyzer:
-    image: "conorsheppard/scraper-service-chanalyzer"
-    container_name: scraper-service-chanalyzer
+
+  playwright-java-scraper-chanalyzer:
+    image: "conorsheppard/playwright-java-scraper-chanalyzer"
+    container_name: playwright-java-scraper-chanalyzer
     ports:
       - "5050:5050"
     build:
-      context: ./flask-scraper-service
+      context: ./playwright-java-scraper-chanalyzer
       dockerfile: docker-compose/Dockerfile
+
+  postgres:
+    image: postgres:17
+    container_name: postgres-chanalyzer
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: videosdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: root
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

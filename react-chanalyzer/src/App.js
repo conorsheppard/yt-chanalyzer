@@ -6,7 +6,7 @@ import "./Toggle.css";
 
 const scraperApi = process.env.REACT_APP_ANALYTICS_API;
 const ytBaseUrl = "https://www.youtube.com/";
-const maxVideos = 88;
+const maxVideos = 100;
 
 function App() {
   const [values, setValues] = useState({channelname: ""});
@@ -15,7 +15,8 @@ function App() {
   const [avgViewsGraphData, setAvgViewsGraphData] = useState();
   const [mainGraphData, setMainGraphData] = useState();
   const [graphData, setGraphData] = useState([]);
-  const [interval, setInterval] = useState();
+  const [videoCount, setVideoCount] = useState(0);
+  const [videoMonthIndex, setVideoMonthIndex] = useState(0); // keeps track of which month the incoming SSE slots into
   const [processingComplete, setProcessingComplete] = useState(false);
   const [placeholder, setPlaceholder] = useState("@NASA");
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,7 @@ function App() {
       name: "channelname",
       type: "text",
       errormessage: "Channel name should start with an '@' symbol and be a real YouTube channel with at least 1 video.",
-      pattern: "(?:^|[^w])(?:@)([A-Za-z0-9_](?:(?:[A-Za-z0-9_]|(?:.(?!.))){0,28}(?:[A-Za-z0-9_]))?)",
+      pattern: "(?:^|[^w])@([A-Za-z0-9_.](?:[A-Za-z0-9_.]{0,28}[A-Za-z0-9_.])?)",
       required: true,
     }
   ];
@@ -36,22 +37,42 @@ function App() {
     setPlaceholder(values["channelname"]);
     setLoading(true);
     setProcessingComplete(false);
+    setVideoCount(0);
     let mainGraphData = initMainGraph();
     let avgViewsGraphData = initAvgViewsGraph();
     setGraphData(showAvgViewsGraph.current ? avgViewsGraphData : mainGraphData);
 
-    const eventSource = new EventSource(`${scraperApi}/v1/channel/${values["channelname"]}/videos`);
+    const eventSource = new EventSource(`${scraperApi}/v1/channels/${values["channelname"]}/videos`);
+    let localVideoMonthIndex = -1;
 
     eventSource.onmessage = event => {
       setLoading(false);
       const eventData = JSON.parse(event.data);
-      let mainGraphData = initMainGraph();
-      let avgViewsGraphData = initAvgViewsGraph();
-      mainGraphData["labels"] = eventData["labels"];
-      avgViewsGraphData["labels"] = eventData["labels"];
-      mainGraphData["datasets"][0]["data"] = eventData["datasets"][0]["data"];
-      mainGraphData["datasets"][1]["data"] = eventData["datasets"][1]["data"];
-      avgViewsGraphData["datasets"][0]["data"] = eventData["datasets"][2]["data"];
+      const date = new Date(eventData.publishedTime);
+      const options = { year: 'numeric', month: 'short' };
+      const videoUploadedMonth = date.toLocaleDateString('en-US', options);
+      if (!mainGraphData["labels"].includes(videoUploadedMonth)) {
+        updateAvgForMonth(avgViewsGraphData, mainGraphData, localVideoMonthIndex);
+        localVideoMonthIndex++;
+        mainGraphData["labels"] = [...mainGraphData["labels"], videoUploadedMonth];
+        avgViewsGraphData["labels"] = [...avgViewsGraphData["labels"], videoUploadedMonth];
+      }
+
+      if (typeof mainGraphData["datasets"][0]["data"][localVideoMonthIndex] === "undefined") {
+        mainGraphData["datasets"][0]["data"][localVideoMonthIndex] = 0;
+        mainGraphData["datasets"][1]["data"][localVideoMonthIndex] = 0;
+        avgViewsGraphData["datasets"][0]["data"][localVideoMonthIndex] = 0;
+      }
+      mainGraphData["datasets"][0]["data"][localVideoMonthIndex] += 1;
+
+      mainGraphData["datasets"][1]["data"][localVideoMonthIndex] =
+        (parseFloat(mainGraphData["datasets"][1]["data"][localVideoMonthIndex]) || 0) +
+        parseFloat(eventData.views) / 1000000;
+
+      avgViewsGraphData["datasets"][0]["data"][localVideoMonthIndex] =
+        (parseFloat(avgViewsGraphData["datasets"][0]["data"][localVideoMonthIndex]) || 0) +
+        parseFloat(eventData.views);
+
       setMainGraphData(mainGraphData);
       setAvgViewsGraphData(avgViewsGraphData);
 
@@ -61,12 +82,15 @@ function App() {
         setGraphData(mainGraphData);
       }
 
-      setInterval(eventData["currentInterval"]);
-
-      if (eventData["currentInterval"] === maxVideos) {
-          eventSource.close();
-          setProcessingComplete(true);
-      }
+        setVideoCount(prev => {
+          const count = prev + 1;
+          if (count === maxVideos) {
+            updateAvgForMonth(avgViewsGraphData, mainGraphData, localVideoMonthIndex);
+            eventSource.close();
+            setProcessingComplete(true);
+          }
+          return count;
+        });
     }
 
     return () => eventSource.close();
@@ -107,9 +131,9 @@ function App() {
                 </div>
               </div>
               <div className="processing-indicator medium-text">
-                {processingComplete === true && <span>Processing complete. </span>}{typeof(interval) === 'undefined' ? 0 : ' ' + interval} videos processed{processingComplete === true ? <span>.</span> : <span>...</span>}
+                {processingComplete && <span>Processing complete. </span>} {videoCount} videos processed{processingComplete ? <span>.</span> : <span>...</span>}
               </div>
-              <BarChart data={graphData} />
+              <BarChart key={videoCount} data={graphData} />
             </div>
           }
         </div>
@@ -125,6 +149,13 @@ function isEmpty(obj) {
   }
 
   return true;
+}
+
+function updateAvgForMonth(avgViewsGraphData, mainGraphData, index) {
+  const total = parseFloat(avgViewsGraphData["datasets"][0]["data"][index]) || 0;
+  const count = mainGraphData["datasets"][0]["data"][index] || 1; // Avoid division by zero
+  const average = total / count;
+  avgViewsGraphData["datasets"][0]["data"][index] = average;
 }
 
 function initMainGraph() {

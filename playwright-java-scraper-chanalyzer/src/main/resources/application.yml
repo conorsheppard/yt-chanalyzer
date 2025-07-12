@@ -1,0 +1,6 @@
+server:
+  port: 5050
+
+logging:
+  level:
+    org.springframework.web.reactive.function.client.ExchangeFunctions: TRACE

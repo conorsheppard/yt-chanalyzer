@@ -2,92 +2,86 @@ package com.youtube.chanalyzer.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.youtube.chanalyzer.dto.ChartJSDataResponseDTO;
+import com.youtube.chanalyzer.dto.YouTubeVideoDTO;
+import com.youtube.chanalyzer.repo.ScrapeStatusRepository;
+import com.youtube.chanalyzer.repo.ScrapedVideoRepository;
 import com.youtube.chanalyzer.scraper.ScraperAPI;
 import lombok.SneakyThrows;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
-import okhttp3.mockwebserver.RecordedRequest;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.nio.file.Path;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 
 @ExtendWith(MockitoExtension.class)
 class YTChannelDataServiceTest {
 
     private YTChannelDataService ytChannelDataService;
-    private final String VIDEOS_2 = "2_VIDEOS";
-    private final String VIDEO_1 =  "1_VIDEO";
-    private final String EMPTY = "EMPTY";
+    private static final String VIDEOS_2 = "2_VIDEOS";
+    private static final String VIDEO_1 = "1_VIDEO";
+    private static final String EMPTY = "EMPTY";
 
-    class TestScraper implements ScraperAPI {
+    static class TestScraper implements ScraperAPI<YouTubeVideoDTO> {
         @SneakyThrows
         @Override
-        public Flux<?> getChannelVideoData(String responseFile) {
-            String MOCK_RESPONSE_FILE = getResponseFile(responseFile);
-            var responseBody = new Scanner(new File(MOCK_RESPONSE_FILE)).nextLine();
-            TypeReference<List<HashMap<String, String>>> jacksonTypeReference = new TypeReference<>(){};
-            List<HashMap<String, String>> jacksonList = new ObjectMapper().readValue(responseBody, jacksonTypeReference);
-
-            return Flux.just(new ChartJSDataResponseDTO(jacksonList));
+        public Flux<YouTubeVideoDTO> getChannelVideoData(String responseFile, int numVideos) {
+            String mockResponseFile = getResponseFile(responseFile);
+            List<YouTubeVideoDTO> videoList = new ObjectMapper()
+                    .readValue(Path.of(mockResponseFile).toFile(), new TypeReference<>() {
+                    });
+            return Flux.fromIterable(videoList);
         }
     }
 
-    private String getResponseFile(String responseFile) {
+    private static String getResponseFile(String responseFile) {
         return switch (responseFile) {
-            case EMPTY -> "src/test/resources/service/mock-response-body-empty.txt";
-            case VIDEO_1 -> "src/test/resources/service/mock-response-body-1-video.txt";
-            case VIDEOS_2 -> "src/test/resources/service/mock-response-body-2-videos.txt";
+            case EMPTY -> "src/test/resources/service/mock-response-body-empty.json";
+            case VIDEO_1 -> "src/test/resources/service/mock-response-body-1-video.json";
+            case VIDEOS_2 -> "src/test/resources/service/mock-response-body-2-videos.json";
             default -> throw new IllegalStateException("Unexpected value: " + responseFile);
         };
     }
 
     @BeforeEach
     void initialize() {
-        ytChannelDataService = new YTChannelDataService(new TestScraper());
+        ytChannelDataService = new YTChannelDataService(new TestScraper(), mock(ScrapedVideoRepository.class),
+                mock(ScrapeStatusRepository.class));
     }
 
     @Test
     public void testScraper1VideoResponse() {
-        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(VIDEO_1);
+        Flux<YouTubeVideoDTO> response = ytChannelDataService.getChannelVideoData(VIDEO_1, 100);
 
         StepVerifier.create(response)
-                .expectNextMatches(elem -> elem.getLabels().getFirst().contains("Dec"))
+                .expectNextMatches(elem -> elem.equals(new YouTubeVideoDTO("NASA 2025: To the Moon, Mars, and Beyond",
+                        "https://youtube.com/videos?watch=PPQ29WRT-rU", "PPQ29WRT-rU", "269979", "Dec 27, 2024")))
                 .expectComplete()
                 .verify();
     }
 
     @Test
     public void testScraper2VideoResponse() {
-        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(VIDEOS_2);
+        Flux<YouTubeVideoDTO> response = ytChannelDataService.getChannelVideoData(VIDEOS_2, 100);
 
         StepVerifier.create(response)
-                .expectNextMatches(elem -> elem.getLabels().stream().toList().size() == 2)
+                .expectNextMatches(elem -> elem.getVideoId().equals("PPQ29WRT-rU"))
+                .expectNextMatches(elem -> elem.getVideoId().equals("asdf"))
                 .expectComplete()
                 .verify();
     }
 
     @Test
     public void testScraperEmptyResponse() {
-        Flux<ChartJSDataResponseDTO> response = ytChannelDataService.getChannelVideoData(EMPTY);
+        Flux<YouTubeVideoDTO> response = ytChannelDataService.getChannelVideoData(EMPTY, 100);
 
         StepVerifier.create(response)
-                .expectNextMatches(elem -> elem.getLabels().isEmpty())
                 .expectComplete()
                 .verify();
     }

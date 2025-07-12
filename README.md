@@ -1,6 +1,8 @@
 # <img src="./react-chanalyzer/src/logos/youtube-chanalyzer-logo.png" width="23" alt="YouTube Chanalyzer logo"> YouTube Chanalyzer
 _**YouTube channel analytics tool**_
 
+<img src="./spring-boot-chanalyzer/badges/jacoco.svg" style="display: flex;" alt="jacoco-test-coverage-badge">
+
 <a href="https://youtube-chanalyzer.com" target="_blank" rel="noreferrer">youtube-chanalyzer.com</a>
 
 ## Contents
@@ -17,21 +19,10 @@ _**YouTube channel analytics tool**_
 ## Tech Stack
 - Java 23 (OpenJDK)
 - Spring Boot 3
-- Python 3
+- Playwright for Java
 - React 18
 - Docker
 - Kubernetes
-
-<table>
-<tr>
-<td>
-Spring Boot App Test Coverage
-</td>
-<td>
-<img src="./spring-boot-chanalyzer/badges/jacoco.svg" style="display: flex;" alt="jacoco-test-coverage-badge">
-</td>
-</tr>
-</table>
 
 ## Architecture
 
@@ -39,28 +30,17 @@ Spring Boot App Test Coverage
 
 ## How It Works
 
-The user is presented with a search bar where they can submit a YouTube channel name (e.g. `@NASA`). On submit, the React application validates the user's input and sends a GET request to the Spring Boot middleware application which acts as a bridge between the client and the Python web scraper. 
+The user is presented with a search bar where they can submit a YouTube channel name (e.g. `@NASA`).
+On submit, the React application validates the user's input and sends a GET request to the 
+Spring Boot middleware application which acts as a bridge between the client and the Playwright web scraper. 
 
-The Spring Boot middleware system uses a reactive programming model to make requests to the Python web scraper (more specifically it does this using Java's WebClient, Flux and Mono APIs and parallelizes all the requests it has to make).
+The Spring Boot middleware system uses a reactive programming model to make requests to the Playwright for Java web scraper
+(more specifically it does this using Java's WebClient, Flux and Mono APIs and parallelizes all the requests it has to make).
 
 The results of these requests are returned to the user's browser (the React application) via an open SSE (Server-Sent Events) connection.
 
-This provides real-time updates to the client from the server and allows for a non-blocking flow of data from the server to the client (i.e. the client doesn't have to wait until all requests are executed on the server, it receives and displays them as they are pushed from the server).
-
-## Challenges & Resolutions
-
-One significant challenge of building this service was the 3rd party web scraper used and the nature of web scraping itself.
-
-As we're not using any sort of official API, some limitations exist.
-
-For example, the web scraper works like this: you give it a `channel name` and the `number` of videos you want, and it scrapes them sequentially, one at a time.
-
-This means that it can be quite slow for a YouTube channel with a large number of videos.
-
-To combat this, for each search the user makes, the Spring Boot service sends a blast of multiple asynchronous parallel requests, each requesting increasing volumes of videos.
-The initial request (requesting just 1 video) returns quickly relative to the others and the middleware pushes it immediately back to the UI via SSE (Server-Sent Events).
-This is to give the best possible UX to the user, so that they see some results immediately.
-The rest of the results continue to be processed in the background and the user sees them stream through to the UI in real time.
+This provides real-time updates to the client from the server and allows for a non-blocking flow of data from the server to the client
+(i.e. the client doesn't have to wait until all requests are executed on the server, it receives and displays them as they are pushed from the server).
 
 ## How To Run
 
@@ -206,6 +186,5 @@ Copy the address from the `ADDRESS` column into your browser (if your browser en
 ## Future Updates & Improvements
 - CI/CD pipeline with Jenkins and GitHub Actions
 - End-to-end testing
-- Re-write the web scraper to be more efficient (I am interested in using Kotlin's <a href="https://github.com/skrapeit/skrape.it" target="_blank" rel="noreferrer">skrape{it}</a> library for this)
 - Semantic versioning
 - Add linters
