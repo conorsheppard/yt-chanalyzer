@@ -1,6 +1,8 @@
 # <img src="./react-chanalyzer/src/logos/youtube-chanalyzer-logo.png" width="23" alt="YouTube Chanalyzer logo"> YouTube Chanalyzer
 _**YouTube channel analytics tool**_
 
+<img src="./spring-boot-chanalyzer/badges/jacoco.svg" style="display: flex;" alt="jacoco-test-coverage-badge">
+
 <a href="https://youtube-chanalyzer.com" target="_blank" rel="noreferrer">youtube-chanalyzer.com</a>
 
 ## Contents
@@ -21,17 +23,6 @@ _**YouTube channel analytics tool**_
 - React 18
 - Docker
 - Kubernetes
-
-<table>
-<tr>
-<td>
-Spring Boot App Test Coverage
-</td>
-<td>
-<img src="./spring-boot-chanalyzer/badges/jacoco.svg" style="display: flex;" alt="jacoco-test-coverage-badge">
-</td>
-</tr>
-</table>
 
 ## Architecture
 
