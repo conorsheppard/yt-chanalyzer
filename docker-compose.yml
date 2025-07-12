@@ -41,7 +41,7 @@ services:
       dockerfile: docker-compose/Dockerfile
 
   postgres:
-    image: postgres:16
+    image: postgres:17
     container_name: postgres-chanalyzer
     ports:
       - "5432:5432"
