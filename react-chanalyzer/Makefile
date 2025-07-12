@@ -1,9 +1,12 @@
 SHELL := /bin/bash
 
-default: build
+default: run
+
+run:
+	npm start
 
 build:
 	docker build -f docker-compose/Dockerfile.local --no-cache . -t conorsheppard/react-chanalyzer
 
 .SILENT:
-.PHONY: default build
+.PHONY: default run build

@@ -76,4 +76,4 @@ clear-cookies:
 	rm cookies.json
 
 .SILENT:
-.PHONY: default clean docker-clean wrapper compile test mvn-build build run debug mvn-run test-coverage check-coverage coverage-badge-gen test-suite
+.PHONY: default clean docker-clean wrapper compile test mvn-build build run debug mvn-run test-coverage check-coverage coverage-badge-gen test-suite video-details playwright-codegen interactive-scrape latest-video open-video clear-videos clear-cookies
