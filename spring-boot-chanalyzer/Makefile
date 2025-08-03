@@ -14,6 +14,28 @@ test:
 build:
 	docker build -f docker-compose/Dockerfile.local --no-cache . -t conorsheppard/spring-boot-chanalyzer
 
+run:
+	docker run --name spring-boot-chanalyzer \
+	--network yt-chanalyzer_default \
+	-e SCRAPER_URL_LOCAL=http://playwright-java-scraper-chanalyzer:5050/api/v1/channels \
+	-e SPRING_PROFILES_ACTIVE=default \
+	-e SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/videosdb \
+	-e SPRING_DATASOURCE_USERNAME=user \
+	-e SPRING_DATASOURCE_PASSWORD=root \
+	-p 8080:8080 conorsheppard/spring-boot-chanalyzer:latest
+
+debug:
+	docker run --name spring-boot-chanalyzer \
+	--network yt-chanalyzer_default \
+	-e SCRAPER_URL_LOCAL=http://playwright-java-scraper-chanalyzer:5050/api/v1/channels \
+	-e SPRING_PROFILES_ACTIVE=default \
+	-e SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/videosdb \
+	-e SPRING_DATASOURCE_USERNAME=user \
+	-e SPRING_DATASOURCE_PASSWORD=root \
+	-p 8080:8080 -p 5005:5005 \
+	-e JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005" \
+	conorsheppard/spring-boot-chanalyzer:latest
+
 db-start:
 	docker run --name postgres-chanalyzer -e POSTGRES_USER=user -e POSTGRES_PASSWORD=root -e POSTGRES_DB=videosdb -p 5432:5432 -d postgres
 

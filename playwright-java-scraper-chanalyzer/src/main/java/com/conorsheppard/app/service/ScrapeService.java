@@ -107,7 +107,6 @@ public class ScrapeService {
                 })
                 .doOnSubscribe(sub -> log.info("Subscriber connected to initial scrape Flux"))
                 .doOnNext(yt -> log.info("grabbing video: \"{}\" from initial scrape", yt.getTitle()))
-                .log()
                 .share()
                 .doAfterTerminate(() -> log.info("exiting httpClientScrape"));
     }
@@ -145,7 +144,6 @@ public class ScrapeService {
                     browser.close();
                 })
                 .doOnSubscribe(sub -> log.info("Subscriber connected"))
-                .log()
                 .share() // replays results to new subscribers
                 .doAfterTerminate(() -> log.info("exiting scrapeChannel"));
     }

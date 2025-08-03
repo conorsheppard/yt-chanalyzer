@@ -5,6 +5,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+      - SCRAPER_URL_LOCAL=http://playwright-java-scraper-chanalyzer:5050/api/v1/channels
       - SPRING_PROFILES_ACTIVE=default
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/videosdb
       - SPRING_DATASOURCE_USERNAME=user

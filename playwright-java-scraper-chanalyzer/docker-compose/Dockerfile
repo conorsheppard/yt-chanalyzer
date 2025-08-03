@@ -1,14 +1,8 @@
-## Build stage with full JDK
-FROM eclipse-temurin:23-jdk-alpine AS builder
-WORKDIR /app
-COPY .. .
-RUN ./mvnw clean package -q -DskipTests
-
-# Runtime stage with only JRE
-FROM eclipse-temurin:23-jre-alpine
+FROM mcr.microsoft.com/playwright/java:v1.51.0-noble
 WORKDIR /app
 ARG JAVA_OPTS=""
-COPY --from=builder /app/target/playwright-java-scraper-chanalyzer-1.0-SNAPSHOT.jar playwright-java-scraper-chanalyzer.jar
+ARG JAR_FILE=target/playwright-java-scraper-chanalyzer-1.0-SNAPSHOT.jar
+COPY ${JAR_FILE} playwright-java-scraper-chanalyzer.jar
 EXPOSE 5050
 EXPOSE 5005
-ENTRYPOINT ["java", "${JAVA_OPTS}", "-jar", "playwright-java-scraper-chanalyzer.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar playwright-java-scraper-chanalyzer.jar"]
