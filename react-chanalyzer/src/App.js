@@ -16,7 +16,6 @@ function App() {
   const [mainGraphData, setMainGraphData] = useState();
   const [graphData, setGraphData] = useState([]);
   const [videoCount, setVideoCount] = useState(0);
-  const [videoMonthIndex, setVideoMonthIndex] = useState(0); // keeps track of which month the incoming SSE slots into
   const [processingComplete, setProcessingComplete] = useState(false);
   const [placeholder, setPlaceholder] = useState("@NASA");
   const [loading, setLoading] = useState(false);
