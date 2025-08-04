@@ -18,5 +18,5 @@ ENV CHROME_PATH=/usr/bin/chromium-browser \
 
 COPY --from=build /app/target/playwright-java-scraper-chanalyzer-1.0-SNAPSHOT.jar playwright-java-scraper-chanalyzer.jar
 
-CMD ["dumb-init", "java", "-Dplaywright.cli.skip=true", "-jar", "playwright-java-scraper-chanalyzer.jar"]
+CMD ["dumb-init", "java", "-Xms64m", "-Xmx256m", "-Dplaywright.cli.skip=true", "-jar", "playwright-java-scraper-chanalyzer.jar"]
 
