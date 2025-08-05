@@ -1,8 +1,22 @@
-FROM mcr.microsoft.com/playwright/java:v1.51.0-noble
+# Stage 1: Build
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
-ARG JAVA_OPTS=""
-ARG JAR_FILE=target/playwright-java-scraper-chanalyzer-1.0-SNAPSHOT.jar
-COPY ${JAR_FILE} playwright-java-scraper-chanalyzer.jar
-EXPOSE 5050
-EXPOSE 5005
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar playwright-java-scraper-chanalyzer.jar"]
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# Stage 2: Runtime
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+
+# Install only Chromium + required fonts
+RUN apk add --no-cache ca-certificates chromium dumb-init freetype harfbuzz nss ttf-freefont
+
+# Set environment variables for Playwright Chromium to work
+ENV CHROME_PATH=/usr/bin/chromium-browser \
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true
+
+COPY --from=build /app/target/playwright-java-scraper-chanalyzer-1.0-SNAPSHOT.jar playwright-java-scraper-chanalyzer.jar
+
+CMD ["dumb-init", "java", "-Xms64m", "-Xmx256m", "-Dplaywright.cli.skip=true", "-jar", "playwright-java-scraper-chanalyzer.jar"]
+

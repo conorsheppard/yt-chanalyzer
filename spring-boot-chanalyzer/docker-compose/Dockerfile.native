@@ -1,0 +1,33 @@
+# Multi-stage build for native Spring Boot application
+FROM ghcr.io/graalvm/graalvm-ce:21.3.0-jdk AS builder
+
+# Install native-image tool
+RUN gu install native-image
+
+# Set working directory
+WORKDIR /app
+
+# Copy pom.xml and download dependencies
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Copy source code and build native image
+COPY src ./src
+RUN mvn clean package -Pnative -DskipTests
+
+# Runtime stage - use minimal distroless image
+FROM gcr.io/distroless/static-debian12:nonroot
+
+# Copy the native executable
+COPY --from=builder /app/target/chanalyzer app
+
+# Copy application properties
+COPY application.properties application.properties
+
+# Expose ports
+EXPOSE 8080/tcp
+EXPOSE 5005
+
+# Run the native executable
+ENTRYPOINT ["/app"]
+CMD ["--spring.profiles.active=default"] 

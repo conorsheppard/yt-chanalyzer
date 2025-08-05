@@ -5,6 +5,7 @@ services:
     ports:
       - "8080:8080"
     environment:
+      - SCRAPER_URL_LOCAL=http://playwright-java-scraper-chanalyzer:5050/api/v1/channels
       - SPRING_PROFILES_ACTIVE=default
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/videosdb
       - SPRING_DATASOURCE_USERNAME=user
@@ -16,7 +17,7 @@ services:
       - playwright-java-scraper-chanalyzer
     build:
       context: ./spring-boot-chanalyzer
-      dockerfile: docker-compose/Dockerfile
+      dockerfile: docker-compose/Dockerfile.optimized
 
   react-chanalyzer:
     image: "conorsheppard/react-chanalyzer"
@@ -29,7 +30,7 @@ services:
       - spring-boot-chanalyzer
     build:
       context: ./react-chanalyzer
-      dockerfile: docker-compose/Dockerfile
+      dockerfile: docker-compose/Dockerfile.node-optimized
 
   playwright-java-scraper-chanalyzer:
     image: "conorsheppard/playwright-java-scraper-chanalyzer"
@@ -41,7 +42,7 @@ services:
       dockerfile: docker-compose/Dockerfile
 
   postgres:
-    image: postgres:17
+    image: postgres:17-alpine
     container_name: postgres-chanalyzer
     ports:
       - "5432:5432"

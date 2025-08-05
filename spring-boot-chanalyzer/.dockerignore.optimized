@@ -1,0 +1,43 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Maven
+target/
+!target/*.jar
+.mvn/
+mvnw
+mvnw.cmd
+
+# Logs
+*.log
+
+# Documentation
+README.md
+HELP.md
+*.md
+
+# Test files
+src/test/
+
+# Build artifacts
+badges/
+shell/
+.github/
+
+# Docker
+Dockerfile*
+docker-compose/
+.dockerignore*
+
+# Other
+classpath.txt 

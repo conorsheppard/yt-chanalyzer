@@ -27,7 +27,6 @@ public class YouTubeChannelScraperAPI implements ScraperAPI<YouTubeVideoDTO> {
                 .accept(MediaType.valueOf(MediaType.TEXT_EVENT_STREAM_VALUE))
                 .retrieve()
                 .bodyToFlux(YouTubeVideoDTO.class)
-                .log()
                 .share()
                 .onErrorResume(WebClientResponseException.class, ex -> {
                     // Handles HTTP status-related errors (e.g. 4xx, 5xx or malformed response)
