@@ -68,6 +68,8 @@ make down-local
 <details>
 <summary>Minikube run instructions</summary><br />
 
+Prerequisite: Make sure Docker Desktop is up and running, minikube will automatically use this as the default driver.
+
 Start Minikube
 ```shell
 minikube start
